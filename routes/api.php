@@ -40,3 +40,7 @@ Route::group(['middleware' => 'jwtAuth'], function () {
     Route::get('shared', 'Api\SharedController@index');
     Route::post('shared/store', 'Api\SharedController@store');
 });
+// Ruta para realizar un pago
+Route::group(['middleware'=>'jwtAuth'],function(){
+// Route::post()
+});
