@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App\Notifications\ResetPasswordNotification;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
@@ -27,7 +28,7 @@ class User extends Authenticatable implements JWTSubject
     // Relacion con los depositos recibidos
     public function beneficiary()
     {
-        return $this->hasMany(SharedBalace::class, 'beneficiary_id', 'id');
+        return $this->hasMany(SharedBalance::class, 'beneficiary_id', 'id');
     }
     // Relacion con los compañeros cliente
     public function partners()
@@ -69,5 +70,16 @@ class User extends Authenticatable implements JWTSubject
     public function getJWTCustomClaims()
     {
         return [];
+    }
+
+    /**
+     * Send the password reset notification.
+     *
+     * @param  string  $token
+     * @return void
+     */
+    public function sendPasswordResetNotification($token)
+    {
+        $this->notify(new ResetPasswordNotification($token));
     }
 }

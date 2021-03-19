@@ -59,7 +59,7 @@ class ClientController extends Controller
     public function show()
     {
         if (($user = Auth::user())->role_id == 5) {
-            $data['name'] = $user->name . ' ' . $user->client->first_surname . ' ' . $user->client->second_surname;
+            $data['name'] = $user->name . ' ' . $user->first_surname . ' ' . $user->second_surname;
             $data['membership'] = $user->client->membership;
             $data['current_balance'] = $user->deposits->where('status', 2)->sum('balance');
             $data['beneficiary'] = $user->beneficiary->where('status', 2)->sum('balance');
@@ -78,8 +78,8 @@ class ClientController extends Controller
     {
         if (($user = Auth::user())->role_id == 5) {
             $data['name'] = $user->name;
-            $data['first_surname'] = $user->client->first_surname;
-            $data['second_surname'] = $user->client->second_surname;
+            $data['first_surname'] = $user->first_surname;
+            $data['second_surname'] = $user->second_surname;
             $data['email'] = $user->email;
             $data['birthdate'] = $user->client->birthdate;
             $data['sex'] = $user->client->sex;
@@ -113,9 +113,9 @@ class ClientController extends Controller
                     return $this->activities->errorResponse($validator->errors());
                 }
                 $request->merge(['password' => Hash::make($request->password)]);
-                $user->update($request->only(['name', 'email', 'password']));
+                $user->update($request->only(['password']));
             }
-            $user->update($request->only(['name', 'email']));
+            $user->update($request->only(['name', 'first_surname', 'second_surname', 'email']));
             $user->client->update($request->except(['user_id', 'membership', 'points', 'ids']));
             if ($request->password != '') {
                 $this->activities->logout(JWTAuth::getToken(), true);

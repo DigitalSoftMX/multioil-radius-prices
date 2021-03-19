@@ -84,6 +84,24 @@ class Activities
         }
         return true;
     }
+    // Metodo para devolver la informacion de un contacto
+    public function getContact($model)
+    {
+        $data['client_id'] = $model->id;
+        $data['user_id'] = $model->user->id;
+        $data['membership'] = $model->membership;
+        $data['name'] = $model->user->name . ' ' . $model->user->first_surname . ' ' . $model->user->second_surname;
+        return $data;
+    }
+    // Metodo para agregar o eliminar a un contacto
+    public function addOrDropContact(Request $request, $user, $add = true)
+    {
+        if (Client::find($request->id) != null && $user->client->id != $request->id) {
+            $add ? $user->partners()->sync($request->id) : $user->partners()->detach($request->id);
+            return $this->successReponse('message', $add ? 'Contacto agregado correctamente' : 'Contacto eliminado correctamente');
+        }
+        return $this->errorResponse('El contacto no existe');
+    }
     // Metodo para una respuesta correcta del servidor
     public function errorResponse($message)
     {

@@ -24,7 +24,14 @@ class PartnerController extends Controller
     public function index()
     {
         if (($user = Auth::user())->role_id == 5) {
-            return $user->partners;
+            $partners = array();
+            foreach ($user->partners as $partner) {
+                array_push($partners, $this->activities->getContact($partner));
+            }
+            if (count($partners) > 0) {
+                return $this->activities->successReponse('partners', $partners);
+            }
+            return $this->activities->errorResponse('Aún no tienes contactos agregados');
         }
         return $this->activities->logout(JWTAuth::getToken());
     }
@@ -37,7 +44,10 @@ class PartnerController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        if (($user = Auth::user())->role_id == 5) {
+            return $this->activities->addOrDropContact($request, $user);
+        }
+        return $this->activities->logout(JWTAuth::getToken());
     }
 
     /**
@@ -50,37 +60,11 @@ class PartnerController extends Controller
     {
         if (($user = Auth::user())->role_id == 5) {
             if (($client = Client::where([['membership', $request->membership], ['membership', '!=', $user->client->membership]])->first()) != null) {
-                $data['id'] = $client->id;
-                $data['membership'] = $client->membership;
-                $data['name'] = $client->user->name . ' ' . $client->user->first_surname . ' ' . $client->user->second_surname;
-                return $this->activities->successReponse('partner', $data);
+                return $this->activities->successReponse('partner', $this->activities->getContact($client));
             }
             return $this->activities->errorResponse('La membresia del usuario no existe');
         }
         return $this->activities->logout(JWTAuth::getToken());
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-        //
     }
 
     /**
@@ -89,8 +73,11 @@ class PartnerController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Request $request)
     {
-        //
+        if (($user = Auth::user())->role_id == 5) {
+            return $this->activities->addOrDropContact($request, $user, false);
+        }
+        return $this->activities->logout(JWTAuth::getToken());
     }
 }
