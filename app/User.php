@@ -9,14 +9,38 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
 class User extends Authenticatable implements JWTSubject
 {
     use Notifiable;
-
+    // Relacion con el rol del usuario
+    public function rol()
+    {
+        return $this->belongsTo(Role::class, 'role_id', 'id');
+    }
+    // Relacion con los clientes
+    public function client()
+    {
+        return $this->hasOne(Client::class);
+    }
+    // Relacion con los depositos del cliente
+    public function deposits()
+    {
+        return $this->hasMany(Deposit::class);
+    }
+    // Relacion con los depositos recibidos
+    public function beneficiary()
+    {
+        return $this->hasMany(SharedBalace::class, 'beneficiary_id', 'id');
+    }
+    // Relacion con los compañeros cliente
+    public function partners()
+    {
+        return $this->belongsToMany(Client::class, 'partners');
+    }
     /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password',
+        'name', 'first_surname', 'second_surname', 'email', 'password', 'remember_token', 'active', 'role_id'
     ];
 
     /**
