@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Client;
 use App\Http\Controllers\Controller;
 use App\Repositories\Activities;
 use App\SharedBalance;
+use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -72,15 +72,13 @@ class SharedController extends Controller
             if ($count->balance < $request->balance) {
                 return $this->activities->errorResponse('Saldo insuficiente para compartir');
             }
-            if ($request->balance <= 0 || $request->balance == '') {
-                return $this->activities->errorResponse('El saldo a compartir debe ser mayor a cero');
+            $validation = $this->activities->validateBalance($request);
+            if (!(is_bool($validation))) {
+                return $validation;
             }
-            if ($request->membership == $user->client->membership) {
-                return $this->activities->errorResponse('La membresia del usuario no existe');
-            }
-            if (($beneficiary = Client::where('membership', $request->membership)->first()) != null) {
-                SharedBalance::create($request->merge(['sponsor_id' => $user->id, 'beneficiary_id' => $beneficiary->user->id, 'status' => 3])->all());
-                if (($balance = SharedBalance::where([['sponsor_id', $user->id], ['beneficiary_id', $beneficiary->user->id], ['status', 2]])->first()) != null) {
+            if (($beneficiary = User::find($request->id)) != null && $request->id != $user->id) {
+                SharedBalance::create($request->merge(['sponsor_id' => $user->id, 'beneficiary_id' => $beneficiary->id, 'status' => 3])->all());
+                if (($balance = SharedBalance::where([['sponsor_id', $user->id], ['beneficiary_id', $beneficiary->id], ['status', 2]])->first()) != null) {
                     $balance->balance += $request->balance;
                     $balance->save();
                 } else {
@@ -93,39 +91,5 @@ class SharedController extends Controller
             return $this->activities->errorResponse('La membresia del usuario no existe');
         }
         return $this->activities->logout(JWTAuth::getToken());
-    }  
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        //
     }
 }
