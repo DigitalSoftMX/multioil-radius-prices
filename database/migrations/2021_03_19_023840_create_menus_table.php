@@ -15,11 +15,11 @@ class CreateMenusTable extends Migration
     {
         Schema::create('menus', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('name_modulo')->nullable();
-            $table->integer('desplegable')->nullable();
-            $table->string('ruta')->nullable();
+            $table->string('name_module')->nullable();
+            $table->integer('display')->nullable();
+            $table->string('route')->nullable();
             $table->integer('id_role')->nullable();
-            $table->string('icono')->nullable();
+            $table->string('icon')->nullable();
             $table->timestamps();
         });
     }
