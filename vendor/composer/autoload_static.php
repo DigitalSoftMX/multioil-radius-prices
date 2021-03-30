@@ -508,6 +508,7 @@ class ComposerStaticInitd26f41311057ca7354cb03aab2fe009e
         'App\\AdminCompany' => __DIR__ . '/../..' . '/app/AdminCompany.php',
         'App\\AdminMaster' => __DIR__ . '/../..' . '/app/AdminMaster.php',
         'App\\Client' => __DIR__ . '/../..' . '/app/Client.php',
+        'App\\Company' => __DIR__ . '/../..' . '/app/Company.php',
         'App\\Console\\Kernel' => __DIR__ . '/../..' . '/app/Console/Kernel.php',
         'App\\Deposit' => __DIR__ . '/../..' . '/app/Deposit.php',
         'App\\Dispatcher' => __DIR__ . '/../..' . '/app/Dispatcher.php',
