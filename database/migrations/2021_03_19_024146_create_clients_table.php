@@ -20,11 +20,7 @@ class CreateClientsTable extends Migration
             $table->integer('points');
             $table->timestamp('birthdate');
             $table->char('sex');
-            $table->string('phone');
-            $table->string('address');
             $table->string('car');
-            $table->string('RFC');
-            $table->string('business_email')->unique();
             $table->string('ids')->nullable();
             $table->timestamps();
 

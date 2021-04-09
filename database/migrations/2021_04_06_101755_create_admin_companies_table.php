@@ -16,11 +16,13 @@ class CreateAdminCompaniesTable extends Migration
         Schema::create('admin_companies', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
-            $table->string('station');
-            $table->string('schedule');
-            $table->timestamps();
+            $table->unsignedBigInteger('company_id');
 
             $table->foreign('user_id')->references('id')->on('users')
+                ->onDelete('cascade')
+                ->onUpdate('cascade');
+
+            $table->foreign('company_id')->references('id')->on('companies')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
         });

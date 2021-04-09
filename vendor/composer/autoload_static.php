@@ -505,8 +505,8 @@ class ComposerStaticInitd26f41311057ca7354cb03aab2fe009e
     );
 
     public static $classMap = array (
-        'App\\AdminCompany' => __DIR__ . '/../..' . '/app/AdminCompany.php',
         'App\\AdminMaster' => __DIR__ . '/../..' . '/app/AdminMaster.php',
+        'App\\AdminStation' => __DIR__ . '/../..' . '/app/AdminStation.php',
         'App\\Client' => __DIR__ . '/../..' . '/app/Client.php',
         'App\\Company' => __DIR__ . '/../..' . '/app/Company.php',
         'App\\Console\\Kernel' => __DIR__ . '/../..' . '/app/Console/Kernel.php',
@@ -545,7 +545,9 @@ class ComposerStaticInitd26f41311057ca7354cb03aab2fe009e
         'App\\Providers\\RouteServiceProvider' => __DIR__ . '/../..' . '/app/Providers/RouteServiceProvider.php',
         'App\\Repositories\\Activities' => __DIR__ . '/../..' . '/app/Repositories/Activities.php',
         'App\\Role' => __DIR__ . '/../..' . '/app/Role.php',
+        'App\\Schedule' => __DIR__ . '/../..' . '/app/Schedule.php',
         'App\\SharedBalance' => __DIR__ . '/../..' . '/app/SharedBalance.php',
+        'App\\Station' => __DIR__ . '/../..' . '/app/Station.php',
         'App\\Status' => __DIR__ . '/../..' . '/app/Status.php',
         'App\\User' => __DIR__ . '/../..' . '/app/User.php',
         'Asm89\\Stack\\Cors' => __DIR__ . '/..' . '/asm89/stack-cors/src/Cors.php',
