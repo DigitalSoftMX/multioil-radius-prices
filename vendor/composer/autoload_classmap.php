@@ -6,8 +6,8 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
-    'App\\AdminCompany' => $baseDir . '/app/AdminCompany.php',
     'App\\AdminMaster' => $baseDir . '/app/AdminMaster.php',
+    'App\\AdminStation' => $baseDir . '/app/AdminStation.php',
     'App\\Client' => $baseDir . '/app/Client.php',
     'App\\Company' => $baseDir . '/app/Company.php',
     'App\\Console\\Kernel' => $baseDir . '/app/Console/Kernel.php',
@@ -46,7 +46,9 @@ return array(
     'App\\Providers\\RouteServiceProvider' => $baseDir . '/app/Providers/RouteServiceProvider.php',
     'App\\Repositories\\Activities' => $baseDir . '/app/Repositories/Activities.php',
     'App\\Role' => $baseDir . '/app/Role.php',
+    'App\\Schedule' => $baseDir . '/app/Schedule.php',
     'App\\SharedBalance' => $baseDir . '/app/SharedBalance.php',
+    'App\\Station' => $baseDir . '/app/Station.php',
     'App\\Status' => $baseDir . '/app/Status.php',
     'App\\User' => $baseDir . '/app/User.php',
     'Asm89\\Stack\\Cors' => $vendorDir . '/asm89/stack-cors/src/Cors.php',
