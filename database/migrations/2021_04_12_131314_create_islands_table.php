@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateIslandBombsTable extends Migration
+class CreateIslandsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,11 +13,11 @@ class CreateIslandBombsTable extends Migration
      */
     public function up()
     {
-        Schema::create('island_bombs', function (Blueprint $table) {
+        Schema::create('islands', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('station_id');
-            $table->integer('bomb');
-            $table->integer('island');
+            $table->integer('number');
+            $table->integer('bombs');
             $table->timestamps();
 
             $table->foreign('station_id')->references('id')->on('stations')
@@ -33,6 +33,6 @@ class CreateIslandBombsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('island_bombs');
+        Schema::dropIfExists('islands');
     }
 }

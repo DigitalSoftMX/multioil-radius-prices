@@ -18,8 +18,8 @@ class CreateCompaniesTable extends Migration
             $table->string('name');
             $table->string('alias');
             $table->string('business_address');
-            $table->string('phone');
-            $table->string('email');
+            $table->string('phone')->unique();
+            $table->string('email')->unique();
             $table->integer('stations');
             $table->string('logo')->nullable();
             $table->integer('lock');
