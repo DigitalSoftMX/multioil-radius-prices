@@ -41,6 +41,20 @@ Route::group(['middleware' => 'jwtAuth'], function () {
     Route::post('shared/store', 'Api\SharedController@store');
 });
 // Ruta para realizar un pago
-Route::group(['middleware'=>'jwtAuth'],function(){
-// Route::post()
+Route::group(['middleware' => 'jwtAuth'], function () {
+    Route::post('sales/store', 'Api\SaleController@store');
+});
+// Rutas para el despachador
+Route::group(['middleware' => 'jwtAuth'], function () {
+    Route::get('dispatcher/edit', 'Api\DispatcherController@edit');
+    Route::post('dispatcher/update', 'Api\DispatcherController@update');
+    Route::get('dispatcher/show', 'Api\DispatcherController@show');
+    Route::get('schedules', 'Api\SaleController@getSchedules');
+});
+// Rutas para registrar ventas
+Route::group(['middleware' => 'jwtAuth'], function () {
+    Route::post('time', 'Api\SaleController@startEndTime');
+    Route::get('sales/index', 'Api\SaleController@index');
+    Route::get('sales/create', 'Api\SaleController@create');
+    Route::get('sales/show', 'Api\SaleController@show');
 });

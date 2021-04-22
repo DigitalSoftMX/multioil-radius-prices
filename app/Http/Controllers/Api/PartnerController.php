@@ -31,7 +31,7 @@ class PartnerController extends Controller
             if (count($partners) > 0) {
                 return $this->activities->successReponse('partners', $partners);
             }
-            return $this->activities->errorResponse('Aún no tienes contactos agregados');
+            return $this->activities->errorResponse('Aún no tienes contactos agregados', 14);
         }
         return $this->activities->logout(JWTAuth::getToken());
     }
@@ -62,7 +62,7 @@ class PartnerController extends Controller
             if (($client = Client::where([['membership', $request->membership], ['membership', '!=', $user->client->membership]])->first()) != null) {
                 return $this->activities->successReponse('partner', $this->activities->getContact($client));
             }
-            return $this->activities->errorResponse('La membresia del usuario no existe');
+            return $this->activities->errorResponse('La membresia del usuario no existe', 404);
         }
         return $this->activities->logout(JWTAuth::getToken());
     }

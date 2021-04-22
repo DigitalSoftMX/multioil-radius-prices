@@ -17,7 +17,7 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         if (($user = User::where('email', $request->email)->first()) == null) {
-            return $this->activities->errorResponse('El usuario no existe');
+            return $this->activities->errorResponse('El usuario no existe', 404);
         }
         return $this->activities->getToken($request, $user);
     }

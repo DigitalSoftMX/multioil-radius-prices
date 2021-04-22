@@ -25,11 +25,11 @@ class JWTMiddleware
                 return $next($request);
             }
             JWTAuth::invalidate(JWTAuth::parseToken($token));
-            return $this->exceptionResponse('Usuario no autorizado');
+            return $this->exceptionResponse('Usuario no autorizado', 403);
         } catch (\Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
             return $this->exceptionResponse('Token expirado');
         } catch (\Tymon\JWTAuth\Exceptions\TokenInvalidException $e) {
-            return $this->exceptionResponse('Token invalido');
+            return $this->exceptionResponse('Usuario no autorizado', 403);
         } catch (\Tymon\JWTAuth\Exceptions\JWTException $e) {
             return $this->exceptionResponse('Proporcione el token');
         } catch (Exception $e) {
@@ -37,8 +37,8 @@ class JWTMiddleware
         }
     }
     // Funcion para devolver error de token
-    private function exceptionResponse($message)
+    private function exceptionResponse($message, $code = 400)
     {
-        return response()->json(['ok' => false, 'message' => $message]);
+        return response()->json(['ok' => false, 'code' => $code, 'message' => $message,]);
     }
 }

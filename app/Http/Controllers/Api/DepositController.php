@@ -26,10 +26,10 @@ class DepositController extends Controller
         if (($user = Auth::user())->role_id == 5) {
             $deposits = $this->activities->getBalances($request, new Deposit, [['user_id', $user->id], ['status', 1]]);
             if (is_bool($deposits)) {
-                return $this->activities->errorResponse('Las fechas son incorrectas.');
+                return $this->activities->errorResponse('Las fechas son incorrectas.', 12);
             }
             if ($deposits->count() == 0) {
-                return $this->activities->errorResponse('No cuenta con depositos en la cuenta');
+                return $this->activities->errorResponse('No cuenta con depositos en la cuenta', 13);
             }
             $balances = array();
             foreach ($deposits as $deposit) {

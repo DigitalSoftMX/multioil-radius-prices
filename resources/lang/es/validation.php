@@ -190,6 +190,13 @@ return [
         'bussines_name' => 'razón social',
         'CFDI' => 'CFDI',
         'business_email' => 'correo electrónico fiscal',
-        'balance' => 'depósito'
+        'balance' => 'depósito',
+        'liters' => 'litros',
+        'sale' => 'venta',
+        'response' => 'respuesta',
+        'gasoline' => 'gasolina',
+        'dispatcher_id' => 'despachador',
+        'payment' => 'pago',
+        'schedule_id' => 'turno'
     ],
 ];

@@ -37,16 +37,13 @@ class SharedController extends Controller
                 }
             }
             if (is_bool($deposits)) {
-                return $this->activities->errorResponse('Las fechas son incorrectas.');
+                return $this->activities->errorResponse('Las fechas son incorrectas.', 12);
             }
             if ($deposits->count() == 0) {
-                return $this->activities->errorResponse('No cuenta con depósitos en la cuenta');
+                return $this->activities->errorResponse('No cuenta con depósitos en la cuenta', 13);
             }
             $balances = array();
             foreach ($deposits as $deposit) {
-                if ($request->start == '' || $request->end == '') {
-                    $data['id'] = $deposit->id;
-                }
                 $data[($request->value == 'sent') ? 'beneficiary' : 'sponsor'] = ($request->value == 'sent') ?
                     $deposit->beneficiary->name . ' ' . $deposit->beneficiary->client->first_surname : $deposit->sponsor->name . ' ' . $deposit->sponsor->client->first_surname;
                 $data['membership'] = ($request->value == 'sent') ? $deposit->beneficiary->client->membership : $deposit->sponsor->client->membership;
@@ -69,8 +66,9 @@ class SharedController extends Controller
     {
         if (($user = Auth::user())->role_id == 5) {
             $count = $user->deposits->where('status', 2)->first();
+
             if ($count->balance < $request->balance) {
-                return $this->activities->errorResponse('Saldo insuficiente para compartir');
+                return $this->activities->errorResponse('Saldo insuficiente para compartir', 15);
             }
             $validation = $this->activities->validateBalance($request);
             if (!(is_bool($validation))) {
@@ -88,7 +86,7 @@ class SharedController extends Controller
                 $count->save();
                 return $this->activities->successReponse('message', 'Saldo compartido correctamente');
             }
-            return $this->activities->errorResponse('La membresia del usuario no existe');
+            return $this->activities->errorResponse('La membresia del usuario no existe', 404);
         }
         return $this->activities->logout(JWTAuth::getToken());
     }

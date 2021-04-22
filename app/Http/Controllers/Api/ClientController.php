@@ -10,7 +10,6 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 class ClientController extends Controller
@@ -28,10 +27,6 @@ class ClientController extends Controller
      */
     public function store(Request $request)
     {
-        $validator = Validator::make($request->only('password'), ['password' => 'required|string|min:6']);
-        if ($validator->fails()) {
-            return $this->activities->errorResponse($validator->errors());
-        }
         $validation = $this->activities->validateDataUser($request);
         if (!(is_bool($validation))) {
             return $validation;
@@ -44,7 +39,7 @@ class ClientController extends Controller
             }
         }
         $password = $request->password;
-        $user = User::create($request->merge(['password' => Hash::make($request->password), 'active' => 1, 'role_id' => 5])->all());
+        $user = User::create($request->merge(['password' => Hash::make($request->password), 'role_id' => 5])->all());
         Client::create($request->merge(['user_id' => $user->id, 'points' => 0])->all());
         $request->merge(['password' => $password]);
         return $this->activities->getToken($request, $user);
@@ -83,11 +78,8 @@ class ClientController extends Controller
             $data['email'] = $user->email;
             $data['birthdate'] = $user->client->birthdate;
             $data['sex'] = $user->client->sex;
-            $data['phone'] = $user->client->phone;
-            $data['address'] = $user->client->address;
+            $data['phone'] = $user->phone;
             $data['car'] = $user->client->car;
-            $data['RFC'] = $user->client->RFC;
-            $data['business_email'] = $user->client->business_email;
             return $this->activities->successReponse('user', $data);
         }
         return $this->activities->logout(JWTAuth::getToken());
@@ -108,14 +100,10 @@ class ClientController extends Controller
                 return $validation;
             }
             if ($request->password != '') {
-                $validator = Validator::make($request->only('password'), ['password' => 'required|string|min:6']);
-                if ($validator->fails()) {
-                    return $this->activities->errorResponse($validator->errors());
-                }
                 $request->merge(['password' => Hash::make($request->password)]);
                 $user->update($request->only(['password']));
             }
-            $user->update($request->only(['name', 'first_surname', 'second_surname', 'email']));
+            $user->update($request->only(['name', 'first_surname', 'second_surname', 'email', 'phone']));
             $user->client->update($request->except(['user_id', 'membership', 'points', 'ids']));
             if ($request->password != '') {
                 $this->activities->logout(JWTAuth::getToken(), true);
