@@ -15,5 +15,8 @@ class StatusTableSeeder extends Seeder
         Status::create(['name' => 'depósito']);
         Status::create(['name' => 'disponible']);
         Status::create(['name' => 'compartido']);
+        Status::create(['name' => 'Iniciado']);
+        Status::create(['name' => 'Pausado']);
+        Status::create(['name' => 'Terminado']);
     }
 }

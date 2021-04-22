@@ -16,7 +16,7 @@ class Activities
     public function getToken($request, $user)
     {
         if (!$token = JWTAuth::attempt($request->only('email', 'password'))) {
-            return $this->errorResponse('El correo electrónico o la contraseña son incorrectos');
+            return $this->errorResponse('El correo electrónico o la contraseña son incorrectos', 10);
         }
         $user->update(['remember_token' => $token]);
         if ($user->role_id == 5) {
@@ -29,11 +29,12 @@ class Activities
     {
         try {
             JWTAuth::invalidate(JWTAuth::parseToken($token));
-            return ($success) ? $this->successReponse('message', 'Cierre de sesion correcto') : $this->errorResponse('Usuario no autorizado');
+            return ($success) ? $this->successReponse('message', 'Cierre de sesion correcto') : $this->errorResponse('Usuario no autorizado', 403);
         } catch (Exception $e) {
-            return $this->errorResponse('Token invalido');
+            return $this->errorResponse('Token invalido', 400);
         }
     }
+    // Método para validar los datos del cliente a registrar
     public function validateDataUser(Request $request, $user = null)
     {
         $validator = Validator::make($request->all(), [
@@ -43,22 +44,22 @@ class Activities
             'email' => [
                 'required', 'email', Rule::unique((new User)->getTable())->ignore($user->id ?? null)
             ],
+            'password' => [
+                $user ? 'required_with:password_confirmation' : 'required', 'nullable', 'confirmed', 'min:8'
+            ],
+            'phone' => [
+                'required', 'string', 'min:10', Rule::unique((new User)->getTable())->ignore($user->id ?? null)
+            ],
             'birthdate' => 'required|date_format:Y-m-d',
             'sex' => 'required',
-            'phone' => 'required|string|min:10',
-            'address' => 'required',
             'car' => 'required',
-            'RFC' => 'required',
-            'business_email' => [
-                'required', 'email', Rule::unique((new Client)->getTable())->ignore($user->client->id ?? null)
-            ],
         ]);
         if ($validator->fails()) {
-            return $this->errorResponse($validator->errors());
+            return $this->errorResponse($validator->errors(), 11);
         }
         return true;
     }
-    // Metodo para validar las fechas de consulta
+    // Metodo para obtener registros de compras,ventas o depositos
     public function getBalances(Request $request, $model, $query, $all = false)
     {
         if (!$all) {
@@ -77,10 +78,10 @@ class Activities
     public function validateBalance(Request $request)
     {
         $validator = Validator::make($request->only('balance'), [
-            'balance' => 'required|integer|min:100|exclude_if:balance,0'
+            'balance' => 'required|integer|min:50|exclude_if:balance,0'
         ]);
         if ($validator->fails()) {
-            return $this->errorResponse($validator->errors());
+            return $this->errorResponse($validator->errors(), 11);
         }
         return true;
     }
@@ -100,12 +101,12 @@ class Activities
             $add ? $user->partners()->sync($request->id) : $user->partners()->detach($request->id);
             return $this->successReponse('message', $add ? 'Contacto agregado correctamente' : 'Contacto eliminado correctamente');
         }
-        return $this->errorResponse('El contacto no existe');
+        return $this->errorResponse('El contacto no existe', 404);
     }
     // Metodo para una respuesta correcta del servidor
-    public function errorResponse($message)
+    public function errorResponse($message, $code)
     {
-        return response()->json(['ok' => false, 'message' => $message]);
+        return response()->json(['ok' => false, 'code' => $code, 'message' => $message]);
     }
     // Metodo para una respuesta errónea del servidor
     public function successReponse($name, $data, $rol = null)
