@@ -23,11 +23,11 @@ class MenuTableSeeder extends Seeder
         $menu->roles()->sync([1, 2]);
         $menu = Menu::create(['name_module' => 'Administradores', 'display' => 0, 'route' => 'admins', 'id_role' => 0, 'icon' => 'nc-credit-card']);
         $menu->roles()->sync([1, 2]);
-        $menu = Menu::create(['name_module' => 'Despachadores', 'display' => 0, 'route' => 'dispatchers', 'id_role' => 0, 'icon' => 'nc-badge']);
-        $menu->roles()->sync(3);
         $menu = Menu::create(['name_module' => 'Turnos', 'display' => 0, 'route' => 'schedules', 'id_role' => 0, 'icon' => 'nc-time-alarm']);
         $menu->roles()->sync(3);
         $menu = Menu::create(['name_module' => 'Islas y bombas', 'display' => 0, 'route' => 'islands', 'id_role' => 0, 'icon' => 'nc-bullet-list-67']);
+        $menu->roles()->sync(3);
+        $menu = Menu::create(['name_module' => 'Despachadores', 'display' => 0, 'route' => 'dispatchers', 'id_role' => 0, 'icon' => 'nc-badge']);
         $menu->roles()->sync(3);
         $menu = Menu::create(['name_module' => 'Clientes', 'display' => 0, 'route' => 'clients', 'id_role' => 0, 'icon' => 'nc-bullet-list-67']);
         $menu->roles()->sync(1);
