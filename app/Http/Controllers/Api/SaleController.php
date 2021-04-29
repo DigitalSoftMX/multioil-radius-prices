@@ -15,6 +15,9 @@ use App\Schedule;
 use App\User;
 use Illuminate\Support\Facades\Validator;
 use App\SharedBalance;
+use App\Station;
+use Exception;
+use SimpleXMLElement;
 
 class SaleController extends Controller
 {
@@ -294,6 +297,52 @@ class SaleController extends Controller
                 array_push($data, $schedule);
             }
             return $this->activities->successReponse('schedules', $data);
+        }
+        return $this->activities->logout(JWTAuth::getToken());
+    }
+    // lista de las estaciones
+    public function getStations()
+    {
+        if ($this->user->role_id == 5) {
+            $stations = array();
+            foreach (Station::all() as $station) {
+                $data['id'] = $station->place_id;
+                $data['name'] = $station->name;
+                $data['address'] = $station->address;
+                $data['phone'] = $station->phone;
+                $data['email'] = $station->email;
+                $data['latitude'] = $station->latitude;
+                $data['longitude'] = $station->longitude;
+                array_push($stations, $data);
+            }
+            return $this->activities->successReponse('stations', $stations);
+        }
+        return $this->activities->logout(JWTAuth::getToken());
+    }
+    // lista de precios de la estacion
+    public function getPricesGasoline(Request $request)
+    {
+        if ($this->user->role_id == 5) {
+            $validator = Validator::make($request->only('id'), ['id' => 'required|numeric']);
+            if ($validator->fails()) {
+                return $this->activities->errorResponse($validator->errors(), 11);
+            }
+            try {
+                $apiPrices = new SimpleXMLElement('https://publicacionexterna.azurewebsites.net/publicaciones/prices', NULL, TRUE);
+                $prices = array();
+                foreach ($apiPrices->place as $place) {
+                    if ($place['place_id'] == $request->id) {
+                        foreach ($place->gas_price as $price) {
+                            $prices["{$price['type']}"] = (float) $price;
+                        }
+                        return $this->activities->successReponse('prices', $prices);
+                    }
+                }
+                return $prices;
+            } catch (Exception $e) {
+                return $this->activities->errorResponse('Intente más tarde', 19);
+            }
+            return 'precios de la gasolina';
         }
         return $this->activities->logout(JWTAuth::getToken());
     }

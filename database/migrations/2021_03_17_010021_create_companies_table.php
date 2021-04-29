@@ -22,7 +22,7 @@ class CreateCompaniesTable extends Migration
             $table->string('email')->unique();
             $table->integer('stations');
             $table->string('logo')->nullable();
-            $table->integer('lock');
+            $table->integer('lock')->default(0);
             $table->timestamps();
         });
     }

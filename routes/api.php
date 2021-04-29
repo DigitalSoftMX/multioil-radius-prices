@@ -22,6 +22,8 @@ Route::group(['middleware' => 'jwtAuth'], function () {
     Route::get('client/show', 'Api\ClientController@show');
     Route::get('client/edit', 'Api\ClientController@edit');
     Route::post('client/update', 'Api\ClientController@update');
+    Route::get('stations', 'Api\SaleController@getStations');
+    Route::get('prices', 'Api\SaleController@getPricesGasoline');
 });
 // Rutas para realizar depositos e historial
 Route::group(['middleware' => 'jwtAuth'], function () {
