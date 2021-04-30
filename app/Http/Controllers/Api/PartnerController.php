@@ -11,10 +11,14 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 
 class PartnerController extends Controller
 {
-    protected $activities;
+    private $activities, $user;
     public function __construct(Activities $activities)
     {
         $this->activities = $activities;
+        $this->user = Auth::user();
+        if ($this->user == null || $this->user->role_id != 5) {
+            $this->activities->logout(JWTAuth::getToken());
+        }
     }
     /**
      * Display a listing of the resource.
@@ -23,17 +27,14 @@ class PartnerController extends Controller
      */
     public function index()
     {
-        if (($user = Auth::user())->role_id == 5) {
-            $partners = array();
-            foreach ($user->partners as $partner) {
-                array_push($partners, $this->activities->getContact($partner));
-            }
-            if (count($partners) > 0) {
-                return $this->activities->successReponse('partners', $partners);
-            }
-            return $this->activities->errorResponse('Aún no tienes contactos agregados', 14);
+        $partners = array();
+        foreach ($this->user->partners as $partner) {
+            array_push($partners, $this->activities->getContact($partner));
         }
-        return $this->activities->logout(JWTAuth::getToken());
+        if (count($partners) > 0) {
+            return $this->activities->successReponse('partners', $partners);
+        }
+        return $this->activities->errorResponse('Aún no tienes contactos agregados', 14);
     }
 
     /**
@@ -44,10 +45,7 @@ class PartnerController extends Controller
      */
     public function store(Request $request)
     {
-        if (($user = Auth::user())->role_id == 5) {
-            return $this->activities->addOrDropContact($request, $user);
-        }
-        return $this->activities->logout(JWTAuth::getToken());
+        return $this->activities->addOrDropContact($request, $this->user);
     }
 
     /**
@@ -58,13 +56,10 @@ class PartnerController extends Controller
      */
     public function show(Request $request)
     {
-        if (($user = Auth::user())->role_id == 5) {
-            if (($client = Client::where([['membership', $request->membership], ['membership', '!=', $user->client->membership]])->first()) != null) {
-                return $this->activities->successReponse('partner', $this->activities->getContact($client));
-            }
-            return $this->activities->errorResponse('La membresia del usuario no existe', 404);
+        if (($client = Client::where([['membership', $request->membership], ['membership', '!=', $this->user->client->membership]])->first()) != null) {
+            return $this->activities->successReponse('partner', $this->activities->getContact($client));
         }
-        return $this->activities->logout(JWTAuth::getToken());
+        return $this->activities->errorResponse('La membresia del usuario no existe', 404);
     }
 
     /**
@@ -75,9 +70,6 @@ class PartnerController extends Controller
      */
     public function destroy(Request $request)
     {
-        if (($user = Auth::user())->role_id == 5) {
-            return $this->activities->addOrDropContact($request, $user, false);
-        }
-        return $this->activities->logout(JWTAuth::getToken());
+        return $this->activities->addOrDropContact($request, $this->user, false);
     }
 }

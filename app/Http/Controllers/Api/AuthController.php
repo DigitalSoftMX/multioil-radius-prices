@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
-    //protected $activities;
+    private $activities;
     public function __construct(Activities $activities)
     {
         $this->activities = $activities;

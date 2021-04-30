@@ -9,12 +9,11 @@ use App\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 class ClientController extends Controller
 {
-    protected $activities;
+    private $activities;
     public function __construct(Activities $activities)
     {
         $this->activities = $activities;
@@ -39,7 +38,7 @@ class ClientController extends Controller
             }
         }
         $password = $request->password;
-        $user = User::create($request->merge(['password' => Hash::make($request->password), 'role_id' => 5])->all());
+        $user = User::create($request->merge(['password' => bcrypt($request->password), 'role_id' => 5])->all());
         Client::create($request->merge(['user_id' => $user->id, 'points' => 0])->all());
         $request->merge(['password' => $password]);
         return $this->activities->getToken($request, $user);
@@ -100,7 +99,7 @@ class ClientController extends Controller
                 return $validation;
             }
             if ($request->password != '') {
-                $request->merge(['password' => Hash::make($request->password)]);
+                $request->merge(['password' => bcrypt($request->password)]);
                 $user->update($request->only(['password']));
             }
             $user->update($request->only(['name', 'first_surname', 'second_surname', 'email', 'phone']));
