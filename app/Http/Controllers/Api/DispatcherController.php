@@ -15,8 +15,7 @@ use Illuminate\Validation\Rule;
 
 class DispatcherController extends Controller
 {
-    protected $activities;
-    private $user, $station;
+    private $activities, $user, $station;
     public function __construct(Activities $activities)
     {
         $this->activities = $activities;

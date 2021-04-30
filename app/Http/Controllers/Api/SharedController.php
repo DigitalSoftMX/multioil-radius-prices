@@ -12,10 +12,14 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 
 class SharedController extends Controller
 {
-    protected $activities;
+    private $activities, $user;
     public function __construct(Activities $activities)
     {
         $this->activities = $activities;
+        $this->user = Auth::user();
+        if ($this->user == null || $this->user->role_id != 5) {
+            $this->activities->logout(JWTAuth::getToken());
+        }
     }
     /**
      * Display a listing of the resource.
@@ -24,36 +28,33 @@ class SharedController extends Controller
      */
     public function index(Request $request)
     {
-        if (($user = Auth::user())->role_id == 5) {
-            $deposits = null;
-            if ($request->value == 'sent') {
-                $deposits = $this->activities->getBalances($request, new SharedBalance, [['sponsor_id', $user->id], ['status', 3]]);
-            }
-            if ($request->value == 'received') {
-                if ($request->start == '' || $request->end == '') {
-                    $deposits = $this->activities->getBalances($request, new SharedBalance, [['beneficiary_id', $user->id], ['status', 2]], true);
-                } else {
-                    $deposits = $this->activities->getBalances($request, new SharedBalance, [['beneficiary_id', $user->id], ['status', 3]]);
-                }
-            }
-            if (is_bool($deposits)) {
-                return $this->activities->errorResponse('Las fechas son incorrectas.', 12);
-            }
-            if ($deposits->count() == 0) {
-                return $this->activities->errorResponse('No cuenta con depósitos en la cuenta', 13);
-            }
-            $balances = array();
-            foreach ($deposits as $deposit) {
-                $data[($request->value == 'sent') ? 'beneficiary' : 'sponsor'] = ($request->value == 'sent') ?
-                    $deposit->beneficiary->name . ' ' . $deposit->beneficiary->client->first_surname : $deposit->sponsor->name . ' ' . $deposit->sponsor->client->first_surname;
-                $data['membership'] = ($request->value == 'sent') ? $deposit->beneficiary->client->membership : $deposit->sponsor->client->membership;
-                $data['balance'] = $deposit->balance;
-                $data['date'] = $deposit->created_at->format('Y-m-d');
-                array_push($balances, $data);
-            }
-            return $this->activities->successReponse('balances', $balances);
+        $deposits = null;
+        if ($request->value == 'sent') {
+            $deposits = $this->activities->getBalances($request, new SharedBalance, [['sponsor_id', $this->user->id], ['status', 3]]);
         }
-        return $this->activities->logout(JWTAuth::getToken());
+        if ($request->value == 'received') {
+            if ($request->start == '' || $request->end == '') {
+                $deposits = $this->activities->getBalances($request, new SharedBalance, [['beneficiary_id', $this->user->id], ['status', 2]], true);
+            } else {
+                $deposits = $this->activities->getBalances($request, new SharedBalance, [['beneficiary_id', $this->user->id], ['status', 3]]);
+            }
+        }
+        if (is_bool($deposits)) {
+            return $this->activities->errorResponse('Las fechas son incorrectas.', 12);
+        }
+        if ($deposits->count() == 0) {
+            return $this->activities->errorResponse('No cuenta con depósitos en la cuenta', 13);
+        }
+        $balances = array();
+        foreach ($deposits as $deposit) {
+            $data[($request->value == 'sent') ? 'beneficiary' : 'sponsor'] = ($request->value == 'sent') ?
+                $deposit->beneficiary->name . ' ' . $deposit->beneficiary->client->first_surname : $deposit->sponsor->name . ' ' . $deposit->sponsor->client->first_surname;
+            $data['membership'] = ($request->value == 'sent') ? $deposit->beneficiary->client->membership : $deposit->sponsor->client->membership;
+            $data['balance'] = $deposit->balance;
+            $data['date'] = $deposit->created_at->format('Y-m-d');
+            array_push($balances, $data);
+        }
+        return $this->activities->successReponse('balances', $balances);
     }
 
     /**
@@ -64,30 +65,26 @@ class SharedController extends Controller
      */
     public function store(Request $request)
     {
-        if (($user = Auth::user())->role_id == 5) {
-            $count = $user->deposits->where('status', 2)->first();
-
-            if ($count->balance < $request->balance) {
-                return $this->activities->errorResponse('Saldo insuficiente para compartir', 15);
-            }
-            $validation = $this->activities->validateBalance($request);
-            if (!(is_bool($validation))) {
-                return $validation;
-            }
-            if (($beneficiary = User::find($request->id)) != null && $request->id != $user->id) {
-                SharedBalance::create($request->merge(['sponsor_id' => $user->id, 'beneficiary_id' => $beneficiary->id, 'status' => 3])->all());
-                if (($balance = SharedBalance::where([['sponsor_id', $user->id], ['beneficiary_id', $beneficiary->id], ['status', 2]])->first()) != null) {
-                    $balance->balance += $request->balance;
-                    $balance->save();
-                } else {
-                    SharedBalance::create($request->merge(['status' => 2])->all());
-                }
-                $count->balance -= $request->balance;
-                $count->save();
-                return $this->activities->successReponse('message', 'Saldo compartido correctamente');
-            }
-            return $this->activities->errorResponse('La membresia del usuario no existe', 404);
+        $count = $this->user->deposits->where('status', 2)->first();
+        if ($count->balance < $request->balance) {
+            return $this->activities->errorResponse('Saldo insuficiente para compartir', 15);
         }
-        return $this->activities->logout(JWTAuth::getToken());
+        $validation = $this->activities->validateBalance($request);
+        if (!(is_bool($validation))) {
+            return $validation;
+        }
+        if (($beneficiary = User::find($request->id)) != null && $request->id != $this->user->id) {
+            SharedBalance::create($request->merge(['sponsor_id' => $this->user->id, 'beneficiary_id' => $beneficiary->id, 'status' => 3])->all());
+            if (($balance = SharedBalance::where([['sponsor_id', $this->user->id], ['beneficiary_id', $beneficiary->id], ['status', 2]])->first()) != null) {
+                $balance->balance += $request->balance;
+                $balance->save();
+            } else {
+                SharedBalance::create($request->merge(['status' => 2])->all());
+            }
+            $count->balance -= $request->balance;
+            $count->save();
+            return $this->activities->successReponse('message', 'Saldo compartido correctamente');
+        }
+        return $this->activities->errorResponse('La membresia del usuario no existe', 404);
     }
 }
