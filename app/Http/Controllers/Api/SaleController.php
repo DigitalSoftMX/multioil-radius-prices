@@ -9,7 +9,6 @@ use App\RegisterTime;
 use App\Repositories\Activities;
 use App\Sale;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Schedule;
 use App\User;
@@ -25,7 +24,7 @@ class SaleController extends Controller
     public function __construct(Activities $activities)
     {
         $this->activities = $activities;
-        $this->user = Auth::user();
+        $this->user = auth()->user();
         if ($this->user != null && ($this->user->role_id == 4 || $this->user->role_id == 5)) {
             if ($this->user->role_id == 4) {
                 $this->station = $this->user->dispatcher->station;
