@@ -22,6 +22,7 @@ class Activities
         if ($user->role_id == 5) {
             $user->client->update($request->only('ids'));
         }
+        // verificar si la empresa a la que pertenece el despachador esta bloqueado
         return $this->successReponse('token', $token, $user->rol->name);
     }
     // Método para cerrar sesion por token
