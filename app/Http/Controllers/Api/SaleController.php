@@ -325,7 +325,7 @@ class SaleController extends Controller
             if ($validator->fails()) {
                 return $this->activities->errorResponse($validator->errors(), 11);
             }
-            try {
+            // try {
                 $apiPrices = new SimpleXMLElement('https://publicacionexterna.azurewebsites.net/publicaciones/prices', NULL, TRUE);
                 $prices = array();
                 foreach ($apiPrices->place as $place) {
@@ -337,9 +337,9 @@ class SaleController extends Controller
                     }
                 }
                 return $prices;
-            } catch (Exception $e) {
+            /* } catch (Exception $e) {
                 return $this->activities->errorResponse('Intente más tarde', 19);
-            }
+            } */
             return 'precios de la gasolina';
         }
         return $this->activities->logout(JWTAuth::getToken());
