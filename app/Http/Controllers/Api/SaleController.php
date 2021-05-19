@@ -324,7 +324,12 @@ class SaleController extends Controller
                 return $this->activities->errorResponse($validator->errors(), 11);
             }
             ini_set("allow_url_fopen", 1);
-            $apiPrices = simplexml_load_file('https://publicacionexterna.azurewebsites.net/publicaciones/prices');
+            $curl = curl_init();
+            curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($curl, CURLOPT_URL, 'https://publicacionexterna.azurewebsites.net/publicaciones/prices');
+            $contents = curl_exec($curl);
+            /*$apiPrices = simplexml_load_file('https://publicacionexterna.azurewebsites.net/publicaciones/prices'); */
+            $apiPrices = simplexml_load_string($contents);
             $prices = array();
             foreach ($apiPrices->place as $place) {
                 if ($place['place_id'] == $request->id) {
