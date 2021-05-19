@@ -323,6 +323,7 @@ class SaleController extends Controller
             if ($validator->fails()) {
                 return $this->activities->errorResponse($validator->errors(), 11);
             }
+            ini_set("allow_url_fopen", 1);
             $apiPrices = simplexml_load_file('https://publicacionexterna.azurewebsites.net/publicaciones/prices');
             $prices = array();
             foreach ($apiPrices->place as $place) {
