@@ -4,21 +4,23 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Repositories\Activities;
+use App\Repositories\ErrorSuccessLogout;
 use App\SharedBalance;
 use App\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 class SharedController extends Controller
 {
-    private $activities, $user;
-    public function __construct(Activities $activities)
+    private $activities, $user, $response;
+    public function __construct(Activities $activities, ErrorSuccessLogout $response)
     {
         $this->activities = $activities;
-        $this->user = Auth::user();
+        $this->response = $response;
+        $this->user = auth()->user();
         if ($this->user == null || $this->user->role_id != 5) {
-            $this->activities->logout(JWTAuth::getToken());
+            $this->response->logout(JWTAuth::getToken());
         }
     }
     /**
@@ -40,10 +42,10 @@ class SharedController extends Controller
             }
         }
         if (is_bool($deposits)) {
-            return $this->activities->errorResponse('Las fechas son incorrectas.', 12);
+            return $this->response->errorResponse('Las fechas son incorrectas.', 12);
         }
         if ($deposits->count() == 0) {
-            return $this->activities->errorResponse('No cuenta con depósitos en la cuenta', 13);
+            return $this->response->errorResponse('No cuenta con depósitos en la cuenta', 13);
         }
         $balances = array();
         foreach ($deposits as $deposit) {
@@ -54,7 +56,7 @@ class SharedController extends Controller
             $data['date'] = $deposit->created_at->format('Y-m-d');
             array_push($balances, $data);
         }
-        return $this->activities->successReponse('balances', $balances);
+        return $this->response->successReponse('balances', $balances);
     }
 
     /**
@@ -66,12 +68,14 @@ class SharedController extends Controller
     public function store(Request $request)
     {
         $count = $this->user->deposits->where('status', 2)->first();
-        if ($count->balance < $request->balance) {
-            return $this->activities->errorResponse('Saldo insuficiente para compartir', 15);
+        if ($count == null || $count->balance < $request->balance) {
+            return $this->response->errorResponse('Saldo insuficiente para compartir', 15);
         }
-        $validation = $this->activities->validateBalance($request);
-        if (!(is_bool($validation))) {
-            return $validation;
+        $validator = Validator::make($request->all(), [
+            'balance' => 'required|integer|min:50|exclude_if:balance,0',
+        ]);
+        if ($validator->fails()) {
+            return $this->response->errorResponse($validator->errors(), 11);
         }
         if (($beneficiary = User::find($request->id)) != null && $request->id != $this->user->id) {
             SharedBalance::create($request->merge(['sponsor_id' => $this->user->id, 'beneficiary_id' => $beneficiary->id, 'status' => 3])->all());
@@ -83,8 +87,8 @@ class SharedController extends Controller
             }
             $count->balance -= $request->balance;
             $count->save();
-            return $this->activities->successReponse('message', 'Saldo compartido correctamente');
+            return $this->response->successReponse('message', 'Saldo compartido correctamente');
         }
-        return $this->activities->errorResponse('La membresia del usuario no existe', 404);
+        return $this->response->errorResponse('La membresia del usuario no existe', 404);
     }
 }

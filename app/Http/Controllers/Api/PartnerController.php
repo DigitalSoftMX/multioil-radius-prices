@@ -5,19 +5,21 @@ namespace App\Http\Controllers\Api;
 use App\Client;
 use App\Http\Controllers\Controller;
 use App\Repositories\Activities;
+use App\Repositories\ErrorSuccessLogout;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 class PartnerController extends Controller
 {
-    private $activities, $user;
-    public function __construct(Activities $activities)
+    private $activities, $user, $response;
+    public function __construct(Activities $activities, ErrorSuccessLogout $response)
     {
         $this->activities = $activities;
-        $this->user = Auth::user();
+        $this->response = $response;
+        $this->user = auth()->user();
         if ($this->user == null || $this->user->role_id != 5) {
-            $this->activities->logout(JWTAuth::getToken());
+            $this->response->logout(JWTAuth::getToken());
         }
     }
     /**
@@ -32,9 +34,9 @@ class PartnerController extends Controller
             array_push($partners, $this->activities->getContact($partner));
         }
         if (count($partners) > 0) {
-            return $this->activities->successReponse('partners', $partners);
+            return $this->response->successReponse('partners', $partners);
         }
-        return $this->activities->errorResponse('Aún no tienes contactos agregados', 14);
+        return $this->response->errorResponse('Aún no tienes contactos agregados', 14);
     }
 
     /**
@@ -57,9 +59,9 @@ class PartnerController extends Controller
     public function show(Request $request)
     {
         if (($client = Client::where([['membership', $request->membership], ['membership', '!=', $this->user->client->membership]])->first()) != null) {
-            return $this->activities->successReponse('partner', $this->activities->getContact($client));
+            return $this->response->successReponse('partner', $this->activities->getContact($client));
         }
-        return $this->activities->errorResponse('La membresia del usuario no existe', 404);
+        return $this->response->errorResponse('La membresia del usuario no existe', 404);
     }
 
     /**

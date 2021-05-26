@@ -31,7 +31,7 @@ Route::group(['middleware' => 'jwtAuth'], function () {
     Route::post('deposit/store', 'Api\DepositController@store');
 });
 // Rutas para CRUD de compañeros
-Route::group(['middleare' => 'jwtAuth'], function () {
+Route::group(['middleware' => 'jwtAuth'], function () {
     Route::get('partner', 'Api\PartnerController@index');
     Route::post('partner/store', 'Api\PartnerController@store');
     Route::get('partner/show', 'Api\PartnerController@show');

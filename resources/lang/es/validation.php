@@ -197,6 +197,6 @@ return [
         'gasoline' => 'gasolina',
         'dispatcher_id' => 'despachador',
         'payment' => 'pago',
-        'schedule_id' => 'turno'
+        'schedule_id' => 'turno',        
     ],
 ];
