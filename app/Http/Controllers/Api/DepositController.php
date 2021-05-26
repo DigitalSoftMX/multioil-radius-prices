@@ -5,19 +5,20 @@ namespace App\Http\Controllers\Api;
 use App\Deposit;
 use App\Http\Controllers\Controller;
 use App\Repositories\Activities;
+use App\Repositories\ErrorSuccessLogout;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 class DepositController extends Controller
 {
-    private $activities, $user;
-    public function __construct(Activities $activities)
+    private $activities, $user, $response;
+    public function __construct(Activities $activities, ErrorSuccessLogout $response)
     {
         $this->activities = $activities;
-        $this->user = Auth::user();
+        $this->response = $response;
+        $this->user = auth()->user();
         if ($this->user == null || $this->user->role_id != 5) {
-            $this->activities->logout(JWTAuth::getToken());
+            $this->response->logout(JWTAuth::getToken());
         }
     }
     /**
@@ -29,10 +30,10 @@ class DepositController extends Controller
     {
         $deposits = $this->activities->getBalances($request, new Deposit, [['user_id', $this->user->id], ['status', 1]]);
         if (is_bool($deposits)) {
-            return $this->activities->errorResponse('Las fechas son incorrectas.', 12);
+            return $this->response->errorResponse('Las fechas son incorrectas.', 12);
         }
         if ($deposits->count() == 0) {
-            return $this->activities->errorResponse('No cuenta con depositos en la cuenta', 13);
+            return $this->response->errorResponse('No cuenta con depositos en la cuenta', 13);
         }
         $balances = array();
         foreach ($deposits as $deposit) {
@@ -41,7 +42,7 @@ class DepositController extends Controller
             $data['hour'] = $deposit->created_at->format('H:i');
             array_push($balances, $data);
         }
-        return $this->activities->successReponse('deposits', $balances);
+        return $this->response->successReponse('deposits', $balances);
     }
 
     /**
@@ -56,13 +57,13 @@ class DepositController extends Controller
         if (!(is_bool($validation))) {
             return $validation;
         }
-        Deposit::create($request->merge(['user_id' => $this->user->id, 'status' => 1])->all());
-        if (($balance = Deposit::where([['user_id', $this->user->id], ['status', 2]])->first()) != null) {
+        Deposit::create($request->merge(['user_id' => $this->user->id, 'status' => 1, 'created' => date('Y-m-d H:i:s', $request->created)])->all());
+        if (($balance = $this->user->deposits->where('status', 2)->first()) != null) {
             $balance->balance += $request->balance;
             $balance->save();
         } else {
             Deposit::create($request->merge(['status' => 2])->all());
         }
-        return $this->activities->successReponse('message', 'Abono realizado correctamente');
+        return $this->response->successReponse('message', 'Abono realizado correctamente');
     }
 }

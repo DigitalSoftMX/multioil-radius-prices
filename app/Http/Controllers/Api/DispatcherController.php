@@ -3,10 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Repositories\Activities;
+use App\Repositories\ErrorSuccessLogout;
 use App\Sale;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Schedule;
 use App\User;
@@ -15,15 +14,15 @@ use Illuminate\Validation\Rule;
 
 class DispatcherController extends Controller
 {
-    private $activities, $user, $station;
-    public function __construct(Activities $activities)
+    private $user, $station, $response;
+    public function __construct(ErrorSuccessLogout $response)
     {
-        $this->activities = $activities;
-        $this->user = Auth::user();
+        $this->response = $response;
+        $this->user = auth()->user();
         if ($this->user != null && $this->user->role_id == 4) {
             $this->station = $this->user->dispatcher->station;
         } else {
-            $this->activities->logout(JWTAuth::getToken());
+            $this->response->logout(JWTAuth::getToken());
         }
     }
     /**
@@ -43,7 +42,7 @@ class DispatcherController extends Controller
         $data['schedule'] = $schedule->name;
         $data['number_sales'] = (isset($sales)) ? count($sales) : 0;
         $data['total_sales'] = (isset($sales)) ? $sales->sum('payment') : 0;
-        return $this->activities->successReponse('dispatcher', $data);
+        return $this->response->successReponse('dispatcher', $data);
     }
 
     /**
@@ -58,7 +57,7 @@ class DispatcherController extends Controller
         $data['first_surname'] = $this->user->first_surname;
         $data['second_surname'] = $this->user->second_surname;
         $data['phone'] = $this->user->phone;
-        return $this->activities->successReponse('data', $data);
+        return $this->response->successReponse('data', $data);
     }
 
     /**
@@ -77,9 +76,9 @@ class DispatcherController extends Controller
             'phone' => ['required', 'string', 'min:10', Rule::unique((new User)->getTable())->ignore($this->user->id ?? null)],
         ]);
         if ($validator->fails()) {
-            return $this->activities->errorResponse($validator->errors(), 11);
+            return $this->response->errorResponse($validator->errors(), 11);
         }
         $this->user->update($request->only(['name', 'first_surname', 'second_surname', 'phone']));
-        return $this->activities->successReponse('message', 'Perfil actualizado correctamente');
+        return $this->response->successReponse('message', 'Perfil actualizado correctamente');
     }
 }
