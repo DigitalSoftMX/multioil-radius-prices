@@ -65,5 +65,6 @@ class ValidationRequest
         if ($validator->fails()) {
             return $validator->errors();
         }
+        return true;
     }
 }
