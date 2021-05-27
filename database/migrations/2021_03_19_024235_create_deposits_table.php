@@ -18,26 +18,13 @@ class CreateDepositsTable extends Migration
             $table->unsignedBigInteger('user_id');
             $table->string('stripe_id');
             $table->double('balance');
-            $table->string('balance_transaction');
             $table->string('currency');
             $table->string('metadata');
-            $table->string('payment_intent');
-            $table->integer('refunded');
-            $table->string('stripe_status');
             $table->integer('amount_captured');
-            $table->integer('amount_refunded');
-            $table->string('application')->nullable();
-            $table->string('application_fee')->nullable();
             $table->string('application_fee_amount')->nullable();
-            $table->string('calculated_statement_descriptor');
             $table->timestamp('created');
-            $table->string('failure_message')->nullable();
             $table->integer('livemode');
-            $table->string('order')->nullable();
-            $table->integer('paid');
             $table->string('payment_method');
-            $table->string('receipt_number');
-            $table->string('receipt_url');
             $table->unsignedBigInteger('status');
             $table->timestamps();
 
