@@ -57,7 +57,7 @@ class DepositController extends Controller
         if (!(is_bool($validation))) {
             return $validation;
         }
-        Deposit::create($request->merge(['user_id' => $this->user->id, 'status' => 1, 'created' => date('Y-m-d H:i:s', $request->created)])->all());
+        Deposit::create($request->merge(['user_id' => $this->user->id, 'status' => 1, 'created' => date('Y-m-d H:i:s', $request->created), 'balance' => ($request->balance / 100)])->all());
         if (($balance = $this->user->deposits->where('status', 2)->first()) != null) {
             $balance->balance += $request->balance;
             $balance->save();
