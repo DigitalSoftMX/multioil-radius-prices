@@ -29,21 +29,12 @@ class Activities
         $validator = Validator::make($request->all(), [
             'stripe_id' => 'required|string',
             'balance' => 'required|integer|min:50|exclude_if:balance,0',
-            'balance_transaction' => 'required|string',
             'currency' => 'required|string',
             'metadata' => ['required', 'string', 'min:2'],
-            'payment_intent' => 'required|string',
-            'refunded' => 'required|integer',
-            'stripe_status' => 'required|string',
             'amount_captured' => 'required|integer|min:50|exclude_if:balance,0',
-            'amount_refunded' => 'required|integer',
-            'calculated_statement_descriptor' => 'required|string',
             'created' => 'required|integer',
             'livemode' => 'required|integer',
-            'paid' => 'required|integer',
             'payment_method' => 'required|string',
-            'receipt_number' => 'required|string',
-            'receipt_url' => 'required|string'
         ]);
         if ($validator->fails()) {
             return $validator->errors();
