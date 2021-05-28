@@ -20,7 +20,6 @@ class CreateClientsTable extends Migration
             $table->integer('points');
             $table->timestamp('birthdate');
             $table->char('sex');
-            $table->string('car');
             $table->string('ids')->nullable();
             $table->timestamps();
 

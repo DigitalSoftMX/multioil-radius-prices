@@ -27,7 +27,6 @@ class ValidationRequest
             ],
             'birthdate' => 'required|date_format:Y-m-d',
             'sex' => 'required',
-            'car' => 'required',
         ]);
         if ($validator->fails()) {
             return $validator->errors();
