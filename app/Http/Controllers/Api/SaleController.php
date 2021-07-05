@@ -27,7 +27,7 @@ class SaleController extends Controller
         $this->validationRequest = $validationRequest;
         $this->response = $response;
         $this->user = auth()->user();
-        if ($this->user != null && ($this->user->role_id == 4 || $this->user->role_id == 5)) {
+        if ($this->user != null && ($this->user->role_id == 3 || $this->user->role_id == 4 || $this->user->role_id == 5)) {
             if ($this->user->role_id == 4) {
                 $this->station = $this->user->dispatcher->station;
             }
@@ -306,7 +306,7 @@ class SaleController extends Controller
     // lista de precios de la estacion
     public function getPricesGasoline(Request $request)
     {
-        if ($this->user->role_id == 5) {
+        if ($this->user->role_id == 3 || $this->user->role_id == 5) {
             $validator = Validator::make($request->only('id'), ['id' => 'required|numeric']);
             if ($validator->fails()) {
                 return $this->response->errorResponse($validator->errors(), 11);
