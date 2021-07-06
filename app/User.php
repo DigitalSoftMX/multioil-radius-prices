@@ -46,6 +46,17 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasMany(RegisterTime::class);
     }
+
+    // Relacion con las empresas
+    /*public function company()
+    {
+        return $this->hasOne(AdminCompany::class);
+    }*/
+    // Relacion con la estación
+    public function stations()
+    {
+        return $this->hasOne(AdminStation::class, 'user_id');
+    }
     /**
      * The attributes that are mass assignable.
      *

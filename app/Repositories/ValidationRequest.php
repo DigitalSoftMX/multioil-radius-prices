@@ -66,4 +66,18 @@ class ValidationRequest
         }
         return true;
     }
+    // Metodo para la validadion de datos de las estaciones cercanas
+    public function validateCoordinates(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'latitude' => 'required|numeric',
+            'longitude' => 'required|numeric',
+            'stationId' => 'required|string',
+            'radius' => 'required|numeric',
+        ]);
+        if ($validator->fails()) {
+            return $validator->errors();
+        }
+        return true;
+    }
 }

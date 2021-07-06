@@ -60,3 +60,9 @@ Route::group(['middleware' => 'jwtAuth'], function () {
     Route::get('sales/create', 'Api\SaleController@create');
     Route::get('sales/show', 'Api\SaleController@show');
 });
+// Rutas para dueños de estación
+Route::group(['middleware' => 'jwtAuth'], function () {
+    Route::get('owners', 'Api\StationOwnersController@index');
+    Route::get('owners/placeclosetome', 'Api\StationOwnersController@placeCloseToMe');
+});
+
