@@ -40,6 +40,7 @@ class StationOwnersController extends Controller
         }
     }
 
+    // función para obtener las estaciónes cerca de unas cordenadas
     public function placeCloseToMe(Request $request){
         $validation = $this->validationRequest->validateCoordinates($request);
         if (!(is_bool($validation))) {
@@ -47,21 +48,62 @@ class StationOwnersController extends Controller
         }
 
         $stations = array();
-        foreach(Station::where('id', '!=', $request->stationId)->get() as $station){
-            if($this->getDistanceBetweenPoints($request->latitude, $request->longitude, $station->latitude,$station->longitude, $request->radius)){
-                $data['id'] = $station->place_id;
-                $data['name'] = $station->name;
-                $data['address'] = $station->address;
-                $data['phone'] = $station->phone;
-                $data['email'] = $station->email;
-                $data['latitude'] = $station->latitude;
-                $data['longitude'] = $station->longitude;
-                array_push($stations, $data);
+
+        $station = [];
+        try {
+
+            ini_set("allow_url_fopen", 1);
+            $curl = curl_init();
+            curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($curl, CURLOPT_URL, 'https://publicacionexterna.azurewebsites.net/publicaciones/places');
+            $contents = curl_exec($curl);
+            $apiPlaces = simplexml_load_string($contents);
+            foreach ($apiPlaces->place as $place) {
+                if($place['place_id'] != $request->placeid){
+                    if($this->getDistanceBetweenPoints($request->latitude, $request->longitude, $place->location->y,$place->location->x, $request->radius)){
+                        $station['place_id'] = intval($place['place_id']);
+                        $station['cre_id'] = strval($place->cre_id);
+                        $station['name'] = strval($place->name);
+                        $station['latitude'] = floatval($place->location->y);
+                        $station['longitude'] = floatval($place->location->x);
+                        array_push($stations, $station);
+                    }
+                }
             }
+
+            if(count($stations) == 0){
+                return $this->response->errorResponse('No hay estaciones cerca.', 13);
+            }
+        
+            $station = [];
+            $newStations = [];
+            
+            curl_setopt($curl, CURLOPT_URL, 'https://publicacionexterna.azurewebsites.net/publicaciones/prices');
+            $contents = curl_exec($curl);
+            $apiPrices = simplexml_load_string($contents);
+            $prices = array();
+            foreach($stations as $station){
+                $station['place_id'] = $station['place_id'];
+                $station['cre_id'] = $station['cre_id'];
+                $station['name'] = $station['name'];
+                $station['latitude'] = $station['latitude'];
+                $station['longitude'] = $station['longitude'];
+                foreach ($apiPrices->place as $place) {
+                    if ($place['place_id'] == $station['place_id']) {
+                        foreach ($place->gas_price as $price) {
+                            $prices["{$price['type']}"] = (float) $price;
+                        }
+                        $station['prices'] =  $prices;
+                    }
+                }
+                array_push($newStations, $station);
+            }
+        } catch (Exception $e) {
+            return $coordinates;
         }
 
-        if(count($stations) > 0){
-            return $this->response->successReponse('stations',$stations);
+        if(count($newStations) > 0){
+            return $this->response->successReponse('stations',$newStations);
         }
 
         return $this->response->errorResponse('No hay estaciones cerca.', 13);
@@ -71,6 +113,7 @@ class StationOwnersController extends Controller
         return $degrees * pi() / 180;
     }
 
+    // función para medir la distancia entre dos coordenadas
     public function getDistanceBetweenPoints($lat1, $lng1, $lat2, $lng2, $radius){
         // El radio del planeta tierra en metros.
         $R = 6378137;
@@ -80,8 +123,6 @@ class StationOwnersController extends Controller
     
         $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
         $distance = $R * $c;
-      
-        //print(distance);
       
         if($distance < $radius){
           return true;
