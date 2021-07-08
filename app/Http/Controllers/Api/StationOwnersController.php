@@ -64,8 +64,8 @@ class StationOwnersController extends Controller
                         $station['place_id'] = intval($place['place_id']);
                         $station['cre_id'] = strval($place->cre_id);
                         $station['name'] = strval($place->name);
-                        $station['latitude'] = floatval($place->location->y);
-                        $station['longitude'] = floatval($place->location->x);
+                        $station['latitude'] = number_format(floatval($place->location->y), 5);
+                        $station['longitude'] = number_format(floatval($place->location->x), 5);
                         array_push($stations, $station);
                     }
                 }
@@ -91,7 +91,7 @@ class StationOwnersController extends Controller
                 foreach ($apiPrices->place as $place) {
                     if ($place['place_id'] == $station['place_id']) {
                         foreach ($place->gas_price as $price) {
-                            $prices["{$price['type']}"] = (float) $price;
+                            $prices["{$price['type']}"] = number_format((float) $price, 2);
                         }
                         $station['prices'] =  $prices;
                     }
