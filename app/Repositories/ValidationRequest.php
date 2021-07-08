@@ -72,7 +72,7 @@ class ValidationRequest
         $validator = Validator::make($request->all(), [
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
-            'stationId' => 'required|string',
+            'placeid' => 'required|string',
             'radius' => 'required|numeric',
         ]);
         if ($validator->fails()) {
