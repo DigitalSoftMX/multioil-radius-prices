@@ -6,12 +6,14 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
+    'App\\AdminCompany' => $baseDir . '/app/AdminCompany.php',
     'App\\AdminMaster' => $baseDir . '/app/AdminMaster.php',
     'App\\AdminStation' => $baseDir . '/app/AdminStation.php',
     'App\\Bomb' => $baseDir . '/app/Bomb.php',
     'App\\Client' => $baseDir . '/app/Client.php',
     'App\\Company' => $baseDir . '/app/Company.php',
     'App\\Console\\Kernel' => $baseDir . '/app/Console/Kernel.php',
+    'App\\Cree' => $baseDir . '/app/Cree.php',
     'App\\Deposit' => $baseDir . '/app/Deposit.php',
     'App\\Dispatcher' => $baseDir . '/app/Dispatcher.php',
     'App\\Exceptions\\Handler' => $baseDir . '/app/Exceptions/Handler.php',
@@ -22,6 +24,7 @@ return array(
     'App\\Http\\Controllers\\Api\\PartnerController' => $baseDir . '/app/Http/Controllers/Api/PartnerController.php',
     'App\\Http\\Controllers\\Api\\SaleController' => $baseDir . '/app/Http/Controllers/Api/SaleController.php',
     'App\\Http\\Controllers\\Api\\SharedController' => $baseDir . '/app/Http/Controllers/Api/SharedController.php',
+    'App\\Http\\Controllers\\Api\\StationOwnersController' => $baseDir . '/app/Http/Controllers/Api/StationOwnersController.php',
     'App\\Http\\Controllers\\Auth\\ConfirmPasswordController' => $baseDir . '/app/Http/Controllers/Auth/ConfirmPasswordController.php',
     'App\\Http\\Controllers\\Auth\\ForgotPasswordController' => $baseDir . '/app/Http/Controllers/Auth/ForgotPasswordController.php',
     'App\\Http\\Controllers\\Auth\\LoginController' => $baseDir . '/app/Http/Controllers/Auth/LoginController.php',
@@ -50,6 +53,9 @@ return array(
     'App\\Providers\\RouteServiceProvider' => $baseDir . '/app/Providers/RouteServiceProvider.php',
     'App\\RegisterTime' => $baseDir . '/app/RegisterTime.php',
     'App\\Repositories\\Activities' => $baseDir . '/app/Repositories/Activities.php',
+    'App\\Repositories\\ErrorSuccessLogout' => $baseDir . '/app/Repositories/ErrorSuccessLogout.php',
+    'App\\Repositories\\Token' => $baseDir . '/app/Repositories/Token.php',
+    'App\\Repositories\\ValidationRequest' => $baseDir . '/app/Repositories/ValidationRequest.php',
     'App\\Role' => $baseDir . '/app/Role.php',
     'App\\Sale' => $baseDir . '/app/Sale.php',
     'App\\Schedule' => $baseDir . '/app/Schedule.php',

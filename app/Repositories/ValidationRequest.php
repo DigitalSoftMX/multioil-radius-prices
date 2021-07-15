@@ -80,4 +80,13 @@ class ValidationRequest
         }
         return true;
     }
+    // Validacion para rango de estaciones
+    public function validateRadio(Request $request)
+    {
+        $validator = Validator::make($request->only('radio'), ['radio' => 'required|integer']);
+        if ($validator->fails()) {
+            return $validator->errors();
+        }
+        return true;
+    }
 }

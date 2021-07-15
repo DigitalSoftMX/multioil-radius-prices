@@ -1,0 +1,15 @@
+<?php
+
+namespace App;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Cree extends Model
+{
+    protected $fillable = ['name', 'place_id', 'cre_id', 'regular', 'premium', 'diesel', 'latitude', 'longitude'];
+    // Relacion con los admins
+    public function admins()
+    {
+        return $this->belongsToMany(User::class, 'admins_cree');
+    }
+}

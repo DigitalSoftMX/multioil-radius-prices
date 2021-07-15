@@ -13,8 +13,8 @@ class Token extends ErrorSuccessLogout
             return $this->errorResponse('El correo electrónico o la contraseña son incorrectos', 10);
         }
         $user->update(['remember_token' => $token]);
-        if ($user->role_id == 5) {
-            $user->client->update($request->only('ids'));
+        if ($user->role_id == 3) {
+            $user->stations->update($request->only('ids'));
         }
         // verificar si la empresa a la que pertenece el despachador esta bloqueado
         return $this->successReponse('token', $token, $user->rol->name);

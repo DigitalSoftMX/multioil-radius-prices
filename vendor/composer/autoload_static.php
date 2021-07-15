@@ -497,12 +497,14 @@ class ComposerStaticInitd26f41311057ca7354cb03aab2fe009e
     );
 
     public static $classMap = array (
+        'App\\AdminCompany' => __DIR__ . '/../..' . '/app/AdminCompany.php',
         'App\\AdminMaster' => __DIR__ . '/../..' . '/app/AdminMaster.php',
         'App\\AdminStation' => __DIR__ . '/../..' . '/app/AdminStation.php',
         'App\\Bomb' => __DIR__ . '/../..' . '/app/Bomb.php',
         'App\\Client' => __DIR__ . '/../..' . '/app/Client.php',
         'App\\Company' => __DIR__ . '/../..' . '/app/Company.php',
         'App\\Console\\Kernel' => __DIR__ . '/../..' . '/app/Console/Kernel.php',
+        'App\\Cree' => __DIR__ . '/../..' . '/app/Cree.php',
         'App\\Deposit' => __DIR__ . '/../..' . '/app/Deposit.php',
         'App\\Dispatcher' => __DIR__ . '/../..' . '/app/Dispatcher.php',
         'App\\Exceptions\\Handler' => __DIR__ . '/../..' . '/app/Exceptions/Handler.php',
@@ -513,6 +515,7 @@ class ComposerStaticInitd26f41311057ca7354cb03aab2fe009e
         'App\\Http\\Controllers\\Api\\PartnerController' => __DIR__ . '/../..' . '/app/Http/Controllers/Api/PartnerController.php',
         'App\\Http\\Controllers\\Api\\SaleController' => __DIR__ . '/../..' . '/app/Http/Controllers/Api/SaleController.php',
         'App\\Http\\Controllers\\Api\\SharedController' => __DIR__ . '/../..' . '/app/Http/Controllers/Api/SharedController.php',
+        'App\\Http\\Controllers\\Api\\StationOwnersController' => __DIR__ . '/../..' . '/app/Http/Controllers/Api/StationOwnersController.php',
         'App\\Http\\Controllers\\Auth\\ConfirmPasswordController' => __DIR__ . '/../..' . '/app/Http/Controllers/Auth/ConfirmPasswordController.php',
         'App\\Http\\Controllers\\Auth\\ForgotPasswordController' => __DIR__ . '/../..' . '/app/Http/Controllers/Auth/ForgotPasswordController.php',
         'App\\Http\\Controllers\\Auth\\LoginController' => __DIR__ . '/../..' . '/app/Http/Controllers/Auth/LoginController.php',
@@ -541,6 +544,9 @@ class ComposerStaticInitd26f41311057ca7354cb03aab2fe009e
         'App\\Providers\\RouteServiceProvider' => __DIR__ . '/../..' . '/app/Providers/RouteServiceProvider.php',
         'App\\RegisterTime' => __DIR__ . '/../..' . '/app/RegisterTime.php',
         'App\\Repositories\\Activities' => __DIR__ . '/../..' . '/app/Repositories/Activities.php',
+        'App\\Repositories\\ErrorSuccessLogout' => __DIR__ . '/../..' . '/app/Repositories/ErrorSuccessLogout.php',
+        'App\\Repositories\\Token' => __DIR__ . '/../..' . '/app/Repositories/Token.php',
+        'App\\Repositories\\ValidationRequest' => __DIR__ . '/../..' . '/app/Repositories/ValidationRequest.php',
         'App\\Role' => __DIR__ . '/../..' . '/app/Role.php',
         'App\\Sale' => __DIR__ . '/../..' . '/app/Sale.php',
         'App\\Schedule' => __DIR__ . '/../..' . '/app/Schedule.php',

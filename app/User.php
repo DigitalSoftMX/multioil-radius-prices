@@ -57,6 +57,11 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasOne(AdminStation::class, 'user_id');
     }
+    // Relacion con las estaciones de la CREE
+    public function stationscree()
+    {
+        return $this->belongsToMany(Cree::class, 'admins_cree');
+    }
     /**
      * The attributes that are mass assignable.
      *
