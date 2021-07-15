@@ -2,23 +2,24 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Cree;
 use App\Http\Controllers\Controller;
+use App\Repositories\Activities;
 use Illuminate\Http\Request;
-//use App\Repositories\Activities;
 use App\Repositories\ValidationRequest;
 use App\Repositories\ErrorSuccessLogout;
 use Tymon\JWTAuth\Facades\JWTAuth;
-use App\Station;
- 
+use Exception;
 
 class StationOwnersController extends Controller
 {
     private $activities, $user, $response, $validationRequest;
-    public function __construct(ValidationRequest $validationRequest, ErrorSuccessLogout $response)
+    public function __construct(ValidationRequest $validationRequest, ErrorSuccessLogout $response, Activities $activities)
     {
         //$this->activities = $activities;
         $this->validationRequest = $validationRequest;
         $this->response = $response;
+        $this->activities = $activities;
         $this->user = auth()->user();
         if ($this->user == null || $this->user->role_id != 3) {
             $this->response->logout(JWTAuth::getToken());
@@ -31,17 +32,18 @@ class StationOwnersController extends Controller
      */
     public function index()
     {
-        if($this->user->stations != null) {
-            if($this->user->stations->station->count() == 0)
+        if ($this->user->stations != null) {
+            if ($this->user->stations->station->count() == 0)
                 return $this->response->errorResponse('No hay estaciones asignadas.', 13);
-            return $this->response->successReponse('station', $this->user->stations->station->makeHidden(['lock','islands','bombs','commission_ds','commission_client','bill','created_at','updated_at',]));
-        }else{
+            return $this->response->successReponse('station', $this->user->stations->station->makeHidden(['lock', 'islands', 'bombs', 'commission_ds', 'commission_client', 'bill', 'created_at', 'updated_at',]));
+        } else {
             return $this->response->errorResponse('No hay empresa asignada.', 13);
         }
     }
 
     // función para obtener las estaciónes cerca de unas cordenadas
-    public function placeCloseToMe(Request $request){
+    public function placeCloseToMe(Request $request)
+    {
         $validation = $this->validationRequest->validateCoordinates($request);
         if (!(is_bool($validation))) {
             return $this->response->errorResponse($validation, 11);
@@ -51,38 +53,20 @@ class StationOwnersController extends Controller
 
         $station = [];
         try {
-
+            $stations = $this->activities->getStationsCloseToMe($request->placeid, $request->latitude, $request->longitude, $request->radius);
+            if (count($stations) == 0) {
+                return $this->response->errorResponse('No hay estaciones cerca.', 13);
+            }
+            $station = [];
+            $newStations = [];
             ini_set("allow_url_fopen", 1);
             $curl = curl_init();
             curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
-            curl_setopt($curl, CURLOPT_URL, 'https://publicacionexterna.azurewebsites.net/publicaciones/places');
-            $contents = curl_exec($curl);
-            $apiPlaces = simplexml_load_string($contents);
-            foreach ($apiPlaces->place as $place) {
-                if($place['place_id'] != $request->placeid){
-                    if($this->getDistanceBetweenPoints($request->latitude, $request->longitude, $place->location->y,$place->location->x, $request->radius)){
-                        $station['place_id'] = intval($place['place_id']);
-                        $station['cre_id'] = strval($place->cre_id);
-                        $station['name'] = strval($place->name);
-                        $station['latitude'] = number_format(floatval($place->location->y), 5);
-                        $station['longitude'] = number_format(floatval($place->location->x), 5);
-                        array_push($stations, $station);
-                    }
-                }
-            }
-
-            if(count($stations) == 0){
-                return $this->response->errorResponse('No hay estaciones cerca.', 13);
-            }
-        
-            $station = [];
-            $newStations = [];
-            
             curl_setopt($curl, CURLOPT_URL, 'https://publicacionexterna.azurewebsites.net/publicaciones/prices');
             $contents = curl_exec($curl);
             $apiPrices = simplexml_load_string($contents);
             $prices = array();
-            foreach($stations as $station){
+            foreach ($stations as $station) {
                 $station['place_id'] = $station['place_id'];
                 $station['cre_id'] = $station['cre_id'];
                 $station['name'] = $station['name'];
@@ -99,103 +83,58 @@ class StationOwnersController extends Controller
                 array_push($newStations, $station);
             }
         } catch (Exception $e) {
-            return $coordinates;
+            // return $coordinates;
         }
 
-        if(count($newStations) > 0){
-            return $this->response->successReponse('stations',$newStations);
+        if (count($newStations) > 0) {
+            return $this->response->successReponse('stations', $newStations);
         }
 
         return $this->response->errorResponse('No hay estaciones cerca.', 13);
     }
 
-    public function degreesToRadians($degrees){
-        return $degrees * pi() / 180;
-    }
 
-    // función para medir la distancia entre dos coordenadas
-    public function getDistanceBetweenPoints($lat1, $lng1, $lat2, $lng2, $radius){
-        // El radio del planeta tierra en metros.
-        $R = 6378137;
-        $dLat = $this->degreesToRadians($lat2 - $lat1);
-        $dLong = $this->degreesToRadians($lng2 - $lng1);
-        $a = sin($dLat / 2) * sin($dLat / 2)  + cos($this->degreesToRadians($lat1))  *  cos($this->degreesToRadians($lat1))  * sin($dLong / 2)  *  sin($dLong / 2);
-    
-        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
-        $distance = $R * $c;
-      
-        if($distance < $radius){
-          return true;
+    // Establece el rango en distancia entre el usuario estacion y las estaciones de competencia
+    public function setRadio(Request $request)
+    {
+        $validation = $this->validationRequest->validateRadio($request);
+        if (!(is_bool($validation))) {
+            return $this->response->errorResponse($validation, 11);
         }
-    
-        return false;
+        $this->user->stations->update($request->only('radio'));
+        $placeId = $this->user->stations->station->place_id;
+        $latitude = $this->user->stations->station->latitude;
+        $longitude = $this->user->stations->station->longitude;
+        $radio = $this->user->stations->radio;
+        $stations = $this->activities->getStationsCloseToMe($placeId, $latitude, $longitude, $radio);
+        // Registro de las estaciones cerca
+        foreach ($stations as $s) {
+            if (!Cree::where('place_id', $s['place_id'])->exists()) {
+                $cree = Cree::create($s);
+                $this->user->stationscree()->attach($cree->id);
+            }
+        }
+        // Registro de relacion con las estaciones
+        foreach ($stations as $s) {
+            $cree = Cree::where('place_id', $s['place_id'])->first()->id;
+            if (!$this->user->stationscree->contains($cree)) {
+                $this->user->stationscree()->attach($cree);
+            }
+        }
+        $prices = $this->activities->updatePrices($this->user->stationscree);
+        $admins = [];
+        foreach ($prices as $price) {
+            foreach ($price->admins as $user) {
+                if (!in_array($user->id, $admins))
+                    array_push($admins, $user->id);
+            }
+        }
+        
+        return $this->response->successReponse('message', 'Rango de estación actualizado.');
     }
-
-    
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
+    // Notificacion de cambios de precio
+    public function notification()
     {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        //
+        return 'notificacion';
     }
 }

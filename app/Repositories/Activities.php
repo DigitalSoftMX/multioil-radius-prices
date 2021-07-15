@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Client;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -99,5 +100,85 @@ class Activities
         $response = curl_exec($ch);
         curl_close($ch);
         return $resp->successReponse('notification', \json_decode($response));
+    }
+    // Metodo para obtener lugares
+    public function getStationsCloseToMe($place_id, $latitude, $longitude, $radio)
+    {
+        $stations = [];
+        try {
+            ini_set("allow_url_fopen", 1);
+            $curl = curl_init();
+            curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($curl, CURLOPT_URL, 'https://publicacionexterna.azurewebsites.net/publicaciones/places');
+            $contents = curl_exec($curl);
+            $apiPlaces = simplexml_load_string($contents);
+            foreach ($apiPlaces->place as $place) {
+                if ($place['place_id'] != $place_id) {
+                    if ($this->getDistanceBetweenPoints($latitude, $longitude, $place->location->y, $place->location->x, $radio)) {
+                        $station['place_id'] = intval($place['place_id']);
+                        $station['cre_id'] = strval($place->cre_id);
+                        $station['name'] = strval($place->name);
+                        $station['latitude'] = number_format(floatval($place->location->y), 5);
+                        $station['longitude'] = number_format(floatval($place->location->x), 5);
+                        array_push($stations, $station);
+                    }
+                }
+            }
+        } catch (Exception $e) {
+        }
+        return $stations;
+    }
+    // Update prices
+    public function updatePrices($userStations)
+    {
+        $prices = [];
+        try {
+            ini_set("allow_url_fopen", 1);
+            $curl = curl_init();
+            curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($curl, CURLOPT_URL, 'https://publicacionexterna.azurewebsites.net/publicaciones/prices');
+            $contents = curl_exec($curl);
+            $apiPrices = simplexml_load_string($contents);
+            foreach ($userStations as $s) {
+                foreach ($apiPrices->place as $place) {
+                    if ($place['place_id'] == $s->place_id) {
+                        $regular = $s->regular;
+                        $premium = $s->premium;
+                        $diesel = $s->diesel;
+                        foreach ($place->gas_price as $price) {
+                            $s->update(["{$price['type']}" => number_format((float) $price, 2)]);
+                        }
+                        if ($regular != $s->regular || $premium != $s->premium || $diesel != $s->diesel)
+                            array_push($prices, $s);
+                        break;
+                    }
+                }
+            }
+        } catch (Exception $e) {
+        }
+        return $prices;
+    }
+    // función para medir la distancia entre dos coordenadas
+    private function getDistanceBetweenPoints($lat1, $lng1, $lat2, $lng2, $radius)
+    {
+        // El radio del planeta tierra en metros.
+        $R = 6378137;
+        $dLat = $this->degreesToRadians($lat2 - $lat1);
+        $dLong = $this->degreesToRadians($lng2 - $lng1);
+        $a = sin($dLat / 2) * sin($dLat / 2)  + cos($this->degreesToRadians($lat1))  *  cos($this->degreesToRadians($lat1))  * sin($dLong / 2)  *  sin($dLong / 2);
+
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+        $distance = $R * $c;
+
+        if ($distance < $radius) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private function degreesToRadians($degrees)
+    {
+        return $degrees * pi() / 180;
     }
 }

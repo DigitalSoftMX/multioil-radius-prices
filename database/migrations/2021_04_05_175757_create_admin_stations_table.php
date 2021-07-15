@@ -18,6 +18,8 @@ class CreateAdminStationsTable extends Migration
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('company_id');
             $table->unsignedBigInteger('station_id');
+            $table->integer('radio')->nullable();
+            $table->string('ids')->nullable();
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users')
