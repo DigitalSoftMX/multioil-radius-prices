@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Repositories\Activities;
 use App\Repositories\Token;
 use App\User;
 use Illuminate\Http\Request;
@@ -10,9 +11,10 @@ use Illuminate\Http\Request;
 class AuthController extends Controller
 {
     private $token;
-    public function __construct(Token $token)
+    public function __construct(Token $token, Activities $activities)
     {
         $this->token = $token;
+        $this->activities = $activities;
     }
     public function login(Request $request)
     {

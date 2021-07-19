@@ -8,6 +8,7 @@ use App\Repositories\Activities;
 use Illuminate\Http\Request;
 use App\Repositories\ValidationRequest;
 use App\Repositories\ErrorSuccessLogout;
+use App\User;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Exception;
 
@@ -106,6 +107,7 @@ class StationOwnersController extends Controller
         $latitude = $this->user->stations->station->latitude;
         $longitude = $this->user->stations->station->longitude;
         $radio = $this->user->stations->radio;
+
         $stations = $this->activities->getStationsCloseToMe($placeId, $latitude, $longitude, $radio);
         // Registro de las estaciones cerca
         foreach ($stations as $s) {
@@ -121,20 +123,7 @@ class StationOwnersController extends Controller
                 $this->user->stationscree()->attach($cree);
             }
         }
-        $prices = $this->activities->updatePrices($this->user->stationscree);
-        $admins = [];
-        foreach ($prices as $price) {
-            foreach ($price->admins as $user) {
-                if (!in_array($user->id, $admins))
-                    array_push($admins, $user->id);
-            }
-        }
-        
+        $this->activities->notificationPricesAndOwners($this->user->stationscree);
         return $this->response->successReponse('message', 'Rango de estación actualizado.');
-    }
-    // Notificacion de cambios de precio
-    public function notification()
-    {
-        return 'notificacion';
     }
 }

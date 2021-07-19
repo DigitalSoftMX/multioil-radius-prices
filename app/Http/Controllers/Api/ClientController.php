@@ -55,9 +55,8 @@ class ClientController extends Controller
     {
         if (($user = auth()->user())->role_id == 3) {
             $data['name'] = $user->name . ' ' . $user->first_surname . ' ' . $user->second_surname;
-            // $data['membership'] = $user->client->membership;
-            // $data['current_balance'] = $user->deposits->where('status', 2)->sum('balance');
-            // $data['beneficiary'] = $user->beneficiary->where('status', 2)->sum('balance');
+            $data['email'] = $user->email;
+            $data['station'] = $user->stations->station->name;
             return $this->response->successReponse('user', $data);
         }
         return $this->response->logout(JWTAuth::getToken());
@@ -72,14 +71,16 @@ class ClientController extends Controller
     public function edit()
     {
         if (($user = auth()->user())->role_id == 3) {
+            $station = $user->stations->station;
             $data['name'] = $user->name;
             $data['first_surname'] = $user->first_surname;
             $data['second_surname'] = $user->second_surname;
             $data['email'] = $user->email;
-            // $data['birthdate'] = $user->client->birthdate;
-            // $data['sex'] = $user->client->sex;
             $data['phone'] = $user->phone;
-            // $data['car'] = $user->client->car;
+            $data['station_alias'] = $station->alias;
+            $data['station_address'] = $station->address;
+            $data['station_phone'] = $station->phone;
+            $data['station_email'] = $station->email;
             return $this->response->successReponse('user', $data);
         }
         return $this->response->logout(JWTAuth::getToken());
@@ -95,7 +96,7 @@ class ClientController extends Controller
     public function update(Request $request)
     {
         if (($user = auth()->user())->role_id == 3) {
-            $validation = $this->validationRequest->validateDataUser($request, $user);
+            $validation = $this->validationRequest->validateDataUser($request, false, $user);
             if (!(is_bool($validation))) {
                 return $this->response->errorResponse($validation, 11);
             }
@@ -104,11 +105,15 @@ class ClientController extends Controller
                 $user->update($request->only(['password']));
             }
             $user->update($request->only(['name', 'first_surname', 'second_surname', 'email', 'phone']));
-            // $user->client->update($request->except(['user_id', 'membership', 'points', 'ids']));
-            if ($request->password != '') {
-                $this->response->logout(JWTAuth::getToken(), true);
-                return $this->response->successReponse('message', 'Perfil y contraseña actualizados correctamente, Inicie sesion nuevamente');
+            $request->merge([
+                'alias' => $request->station_alias, 'address' => $request->station_address,
+                'phone' => $request->station_phone, 'email' => $request->station_email
+            ]);
+            $validation = $this->validationRequest->validateDataUser($request, true, $user);
+            if (!(is_bool($validation))) {
+                return $this->response->errorResponse($validation, 11);
             }
+            $user->stations->station->update($request->only(['alias', 'address', 'phone', 'email']));
             return $this->response->successReponse('message', 'Perfil actualizado correctamente');
         }
         return $this->response->logout(JWTAuth::getToken());
