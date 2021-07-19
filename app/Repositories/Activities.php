@@ -128,8 +128,9 @@ class Activities
         }
         return $stations;
     }
-    // Update prices
-    public function updatePrices($userStations)
+
+    // Actualizar precios y enviar notificacion
+    public function notificationPricesAndOwners($stations)
     {
         $prices = [];
         try {
@@ -139,7 +140,7 @@ class Activities
             curl_setopt($curl, CURLOPT_URL, 'https://publicacionexterna.azurewebsites.net/publicaciones/prices');
             $contents = curl_exec($curl);
             $apiPrices = simplexml_load_string($contents);
-            foreach ($userStations as $s) {
+            foreach ($stations as $s) {
                 foreach ($apiPrices->place as $place) {
                     if ($place['place_id'] == $s->place_id) {
                         $regular = $s->regular;
@@ -156,7 +157,56 @@ class Activities
             }
         } catch (Exception $e) {
         }
-        return $prices;
+        $places = [];
+        $ids = [];
+        foreach ($prices as $price) {
+            $place['name'] = $price->name;
+            $place['regular'] = $price->regular;
+            $place['premium'] = $price->premium;
+            $place['diesel'] = $price->diesel;
+            array_push($places, $place);
+            foreach ($price->admins as $user) {
+                if (!in_array($user->stations->ids, $ids))
+                    array_push($ids, $user->stations->ids);
+            }
+        }
+        // Notificacion a los usuarios y lugares de cambio de precio
+        foreach ($ids as $i) {
+            $this->sendNotification($i, $places);
+        }
+    }
+    // Envia de notifacion a los usuarios con sus estaciones correspondientes
+    private function sendNotification($ids, $stations)
+    {
+        try {
+            $fields = array(
+                'to' => $ids,
+                'notification' =>
+                array(
+                    'title' => 'Cambio de precio',
+                    'body' => 'Estas ' . count($stations) . ' estaciones cambiaron de precio'
+                ),
+                "priority" => "high",
+                "data" => array(
+                    "stations" => $stations
+                ),
+            );
+            $headers = array('Authorization: key=AAAAQDS4lDQ:APA91bF0guhj8Ic6jMAhA2rC01UbAk29K-GlsonaXTHOc9B25muA7Er8HHC-eoBgBNtoLxmFvlPPGRM0AvvmILQuiFnbJKlBUIVBDYQHedF4BfDF1WeapDXcpAJkGfQb7l3GDOfBnifU', 'Content-Type: application/json');
+            $url = 'https://fcm.googleapis.com/fcm/send';
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($fields));
+            $result = curl_exec($ch);
+            curl_close($ch);
+            // return json_decode($result, true);
+            return true;
+        } catch (Exception $e) {
+            return false;
+        }
     }
     // función para medir la distancia entre dos coordenadas
     private function getDistanceBetweenPoints($lat1, $lng1, $lat2, $lng2, $radius)

@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Station;
 use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -10,24 +11,35 @@ use Illuminate\Validation\Rule;
 class ValidationRequest
 {
     // Método para validar los datos del cliente a registrar
-    public function validateDataUser(Request $request, $user = null)
+    public function validateDataUser(Request $request, $station = false, $user = null)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string',
-            'first_surname' => 'required|string',
-            'second_surname' => 'required|string',
-            'email' => [
-                'required', 'email', Rule::unique((new User)->getTable())->ignore($user->id ?? null)
-            ],
-            'password' => [
-                $user ? 'required_with:password_confirmation' : 'required', 'nullable', 'confirmed', 'min:8'
-            ],
-            'phone' => [
-                'required', 'string', 'min:10', Rule::unique((new User)->getTable())->ignore($user->id ?? null)
-            ],
-            'birthdate' => 'required|date_format:Y-m-d',
-            'sex' => 'required',
-        ]);
+        if ($station) {
+            $validator = Validator::make($request->all(), [
+                'alias' => 'required|string|min:3',
+                'address' => 'required|string|min:3',
+                'phone' => [
+                    'required', 'string', 'min:10', Rule::unique((new Station)->getTable())->ignore($user->id ?? null)
+                ],
+                'email' => [
+                    'required', 'email', Rule::unique((new Station)->getTable())->ignore($user->id ?? null)
+                ],
+            ]);
+        } else {
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|string|min:3',
+                'first_surname' => 'required|string|min:3',
+                'second_surname' => 'required|string|min:3',
+                'email' => [
+                    'required', 'email', Rule::unique((new User)->getTable())->ignore($user->id ?? null)
+                ],
+                'phone' => [
+                    'required', 'string', 'min:10', Rule::unique((new User)->getTable())->ignore($user->id ?? null)
+                ],
+                'password' => [
+                    $user ? 'required_with:password_confirmation' : 'required', 'nullable', 'confirmed', 'min:8'
+                ],
+            ]);
+        }
         if ($validator->fails()) {
             return $validator->errors();
         }
