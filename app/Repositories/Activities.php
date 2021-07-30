@@ -184,7 +184,7 @@ class Activities
                 'notification' =>
                 array(
                     'title' => 'Cambio de precio',
-                    'body' => 'Estas ' . count($stations) . ' estaciones cambiaron de precio'
+                    'body' => 'Estas estaciones cambiaron de precio'
                 ),
                 "priority" => "high",
                 "data" => array(
