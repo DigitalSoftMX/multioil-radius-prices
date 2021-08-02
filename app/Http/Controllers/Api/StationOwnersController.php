@@ -126,4 +126,12 @@ class StationOwnersController extends Controller
         $this->activities->notificationPricesAndOwners($this->user->stationscree);
         return $this->response->successReponse('message', 'Rango de estación actualizado.');
     }
+    // Obteniendo la estructura de notificacion
+    /* public function notification()
+    {
+        $activities = new Activities();
+        foreach (User::where('role_id', 3)->get() as $admin) {
+            $activities->notificationPricesAndOwners($admin->stationscree);
+        }
+    } */
 }
