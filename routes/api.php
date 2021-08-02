@@ -65,4 +65,5 @@ Route::group(['middleware' => 'jwtAuth'], function () {
     Route::get('owners', 'Api\StationOwnersController@index');
     Route::get('owners/placeclosetome', 'Api\StationOwnersController@placeCloseToMe');
     Route::post('setradio', 'Api\StationOwnersController@setRadio');
+    // Route::get('notification', 'Api\StationOwnersController@notification');
 });
