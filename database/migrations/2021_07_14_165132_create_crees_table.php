@@ -18,9 +18,6 @@ class CreateCreesTable extends Migration
             $table->string('name');
             $table->integer('place_id');
             $table->string('cre_id');
-            $table->double('regular');
-            $table->double('premium')->nullable();
-            $table->double('diesel')->nullable();
             $table->string('latitude')->nullable();
             $table->string('longitude')->nullable();
             $table->timestamps();
