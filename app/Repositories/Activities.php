@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Client;
 use App\Cree;
+use App\PriceCre;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -133,6 +134,12 @@ class Activities
     // Actualizar precios y enviar notificacion
     public function notificationPricesAndOwners($stations)
     {
+        // borrando historial de un mes atras
+        $today = now()->format('Y-m-d');
+        $today = date("Y-m-d", strtotime($today . "- 1 month"));
+        foreach (PriceCre::whereDate('created_at', '<=', $today)->get() as $pricecree) {
+            $pricecree->delete();
+        }
         $idstations = [];
         try {
             ini_set("allow_url_fopen", 1);
@@ -145,25 +152,36 @@ class Activities
                 foreach ($apiPrices->place as $place) {
                     if ($place['place_id'] == $s->place_id) {
                         $change = false;
-                        $regular = $s->regular;
-                        $premium = $s->premium;
-                        $diesel = $s->diesel;
+                        $lastprice = PriceCre::where('cree_id', $s->id)->whereDate('created_at', now()->format('Y-m-d'))->first();
+                        if ($lastprice != null) {
+                            $regular = $lastprice->regular;
+                            $premium = $lastprice->premium;
+                            $diesel = $lastprice->diesel;
+                        }
+                        $dataprice['cree_id'] = $s->id;
                         foreach ($place->gas_price as $price) {
                             $gastype = $price['type'];
                             $newprice = number_format((float) $price, 2);
-                            $s->update(["$gastype" => $newprice]);
-                            if ("$gastype" == 'regular') {
-                                if ($regular != $newprice)
-                                    $change = true;
+                            $dataprice["$gastype"] = $newprice;
+                            if ($lastprice != null) {
+                                $lastprice->update(["$gastype" => $newprice]);
+                                if ("$gastype" == 'regular') {
+                                    if ($regular != $newprice)
+                                        $change = true;
+                                }
+                                if ("$gastype" == 'premium') {
+                                    if ($premium != $newprice)
+                                        $change = true;
+                                }
+                                if ("$gastype" == 'diesel') {
+                                    if ($diesel != $newprice)
+                                        $change = true;
+                                }
                             }
-                            if ("$gastype" == 'premium') {
-                                if ($premium != $newprice)
-                                    $change = true;
-                            }
-                            if ("$gastype" == 'diesel') {
-                                if ($diesel != $newprice)
-                                    $change = true;
-                            }
+                        }
+                        if ($lastprice == null) {
+                            PriceCre::create($dataprice);
+                            $change = true;
                         }
                         if ($change)
                             array_push($idstations, $s->id);

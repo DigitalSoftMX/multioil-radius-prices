@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Cree extends Model
 {
-    protected $fillable = ['name', 'place_id', 'cre_id', 'regular', 'premium', 'diesel', 'latitude', 'longitude'];
+    protected $fillable = ['name', 'place_id', 'cre_id', 'latitude', 'longitude'];
     // Relacion con los admins
     public function admins()
     {
