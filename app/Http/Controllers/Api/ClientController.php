@@ -2,12 +2,9 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Client;
 use App\Http\Controllers\Controller;
 use App\Repositories\Token;
 use App\Repositories\ValidationRequest;
-use App\User;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
@@ -18,31 +15,6 @@ class ClientController extends Controller
     {
         $this->validationRequest = $validationRequest;
         $this->response = $response;
-    }
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        $validation = $this->validationRequest->validateDataUser($request);
-        if (!(is_bool($validation))) {
-            return $this->response->errorResponse($validation, 11);
-        }
-        while (true) {
-            $membership = 'C' . substr(Carbon::now()->format('Y'), 2) . rand(1000000, 9999999);
-            if (!(Client::where('membership', $membership)->exists())) {
-                $request->merge(['membership' => $membership]);
-                break;
-            }
-        }
-        $password = $request->password;
-        $user = User::create($request->merge(['password' => bcrypt($request->password), 'role_id' => 5])->all());
-        Client::create($request->merge(['user_id' => $user->id, 'points' => 0])->all());
-        $request->merge(['password' => $password]);
-        return $this->response->getToken($request, $user);
     }
 
     /**
