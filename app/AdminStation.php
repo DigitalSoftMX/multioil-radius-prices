@@ -11,7 +11,12 @@ class AdminStation extends Model
         return $this->belongsToMany(Station::class, 'stations');
     }*/
     protected $fillable = ['radio', 'ids'];
-    // relacion con la estacion
+    // Relacion con la empresa
+    public function company()
+    {
+        return $this->hasOne(Company::class, 'id', 'company_id');
+    }
+    // Relacion con la estacion
     public function station()
     {
         return $this->hasOne(Station::class, 'id', 'station_id');
