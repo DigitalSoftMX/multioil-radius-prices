@@ -45,39 +45,6 @@ class ValidationRequest
         }
         return true;
     }
-    // Metodo para la validadion de datos antes de registrar la venta
-    public function validateSale(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'membership' => 'required|string',
-            'gasoline' => 'required|string',
-            'payment' => 'required|numeric',
-            'liters' => 'required|numeric',
-            'sale' => 'required|numeric'
-        ]);
-        if ($validator->fails()) {
-            return $validator->errors();
-        }
-        return true;
-    }
-    // Método para registrar la venta o cobro
-    public function validatePayment(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'response' => 'required|string',
-            'gasoline' => 'required|string',
-            'payment' => 'required|numeric',
-            'liters' => 'required|numeric',
-            'sale' => 'required|numeric',
-            'dispatcher_id' => 'required|integer',
-            'no_bomb' => 'required|integer',
-            'no_island' => 'required|integer'
-        ]);
-        if ($validator->fails()) {
-            return $validator->errors();
-        }
-        return true;
-    }
     // Metodo para la validadion de datos de las estaciones cercanas
     public function validateCoordinates(Request $request)
     {

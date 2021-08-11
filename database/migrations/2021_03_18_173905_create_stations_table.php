@@ -24,11 +24,7 @@ class CreateStationsTable extends Migration
             $table->string('address');
             $table->string('phone')->unique();
             $table->string('email')->unique();
-            $table->integer('islands');
-            $table->integer('bombs');
-            $table->double('commission_ds');
-            $table->double('commission_client');
-            $table->integer('bill');
+            $table->integer('active')->default(1);
             $table->integer('lock')->default(0);
             $table->string('latitude')->nullable();
             $table->string('longitude')->nullable();

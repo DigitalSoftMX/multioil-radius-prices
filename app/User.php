@@ -16,37 +16,6 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->belongsTo(Role::class, 'role_id', 'id');
     }
-    // Relacion con los clientes
-    public function client()
-    {
-        return $this->hasOne(Client::class);
-    }
-    // Relacion con los depositos del cliente
-    public function deposits()
-    {
-        return $this->hasMany(Deposit::class);
-    }
-    // Relacion con los depositos recibidos
-    public function beneficiary()
-    {
-        return $this->hasMany(SharedBalance::class, 'beneficiary_id', 'id');
-    }
-    // Relacion con los compañeros cliente
-    public function partners()
-    {
-        return $this->belongsToMany(Client::class, 'partners');
-    }
-    // Relacion con los deschapadores
-    public function dispatcher()
-    {
-        return $this->hasOne(Dispatcher::class);
-    }
-    // Relacion con los turnos para el despachador
-    public function times()
-    {
-        return $this->hasMany(RegisterTime::class);
-    }
-
     // Relacion con las empresas
     /*public function company()
     {

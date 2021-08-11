@@ -8,7 +8,6 @@ use App\Repositories\Activities;
 use Illuminate\Http\Request;
 use App\Repositories\ValidationRequest;
 use App\Repositories\ErrorSuccessLogout;
-use App\User;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Exception;
 
@@ -17,7 +16,6 @@ class StationOwnersController extends Controller
     private $activities, $user, $response, $validationRequest;
     public function __construct(ValidationRequest $validationRequest, ErrorSuccessLogout $response, Activities $activities)
     {
-        //$this->activities = $activities;
         $this->validationRequest = $validationRequest;
         $this->response = $response;
         $this->activities = $activities;
