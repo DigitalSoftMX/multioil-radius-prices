@@ -12,4 +12,9 @@ class Cree extends Model
     {
         return $this->belongsToMany(User::class, 'admins_cree');
     }
+    // Relacion con los precios de la cree
+    public function prices()
+    {
+        return $this->hasMany(PriceCre::class);
+    }
 }
