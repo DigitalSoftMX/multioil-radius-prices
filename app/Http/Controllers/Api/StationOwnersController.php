@@ -8,6 +8,7 @@ use App\Repositories\Activities;
 use Illuminate\Http\Request;
 use App\Repositories\ValidationRequest;
 use App\Repositories\ErrorSuccessLogout;
+use App\User;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Exception;
 

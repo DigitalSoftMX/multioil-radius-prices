@@ -102,9 +102,9 @@ class Activities
         foreach ($idstations as $id) {
             $station = Cree::find($id);
             $data['name'] = $station->name;
-            $data['regular'] = $station->regular;
-            $data['premium'] = $station->premium;
-            $data['diesel'] = $station->diesel;
+            $data['regular'] = $station->prices->last()->regular;
+            $data['premium'] = $station->prices->last()->premium;
+            $data['diesel'] = $station->prices->last()->diesel;
             array_push($places, $data);
             foreach ($station->admins as $user) {
                 if (!in_array($user->stations->ids, $ids))
