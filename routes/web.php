@@ -1,5 +1,7 @@
 <?php
 
+use App\Repositories\Activities;
+use App\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -14,6 +16,13 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+// Obteniendo la estructura de notificacion
+Route::get('notification', function () {
+    $activities = new Activities();
+    foreach (User::where('role_id', 3)->get() as $admin) {
+        $activities->notificationPricesAndOwners($admin->stationscree);
+    }
+});
 Route::get('/', function () {
     return view('auth.login');
 });

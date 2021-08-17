@@ -12,7 +12,6 @@ use Illuminate\Support\Facades\Route;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
-
 Route::post('login', 'Api\AuthController@login');
 Route::get('logout', 'Api\AuthController@logout');
 Route::post('password/email', 'Auth\ForgotPasswordController@sendResetLinkEmail');
@@ -28,5 +27,4 @@ Route::group(['middleware' => 'jwtAuth'], function () {
     Route::get('owners', 'Api\StationOwnersController@index');
     Route::get('owners/placeclosetome', 'Api\StationOwnersController@placeCloseToMe');
     Route::post('setradio', 'Api\StationOwnersController@setRadio');
-    // Route::get('notification', 'Api\StationOwnersController@notification');
 });
