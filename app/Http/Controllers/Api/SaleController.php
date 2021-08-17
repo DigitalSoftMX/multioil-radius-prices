@@ -13,7 +13,7 @@ class SaleController extends Controller
 {
     private $user, $response;
     public function __construct(ErrorSuccessLogout $response)
-    {       
+    {
         $this->response = $response;
         $this->user = auth()->user();
         if ($this->user == null || $this->user->role_id != 3) {
@@ -41,10 +41,13 @@ class SaleController extends Controller
                     foreach ($place->gas_price as $price) {
                         $prices["{$price['type']}"] = (float) $price;
                     }
-                    return $this->response->successReponse('prices', $prices);
+                    // return $this->response->successReponse('prices', $prices);
                 }
             }
-            return $prices;
+            return count($prices) > 0 ?
+                $this->response->successReponse('prices', $prices) :
+                $this->response->errorResponse('Precios no disponibles', 404);;
+            // return $prices;
         } catch (Exception $e) {
             return $this->response->errorResponse('Intente más tarde', 19);
         }
