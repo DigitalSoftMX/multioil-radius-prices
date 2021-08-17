@@ -64,6 +64,9 @@ class Activities
                             $diesel = $lastprice->diesel;
                         }
                         $dataprice['cree_id'] = $s->id;
+                        $dataprice['regular'] = null;
+                        $dataprice['premium'] = null;
+                        $dataprice['diesel'] = null;
                         foreach ($place->gas_price as $price) {
                             $gastype = $price['type'];
                             $newprice = number_format((float) $price, 2);
@@ -88,10 +91,9 @@ class Activities
                             PriceCre::create($dataprice);
                             $change = true;
                         }
-                        if ($change)
+                        if ($change && !in_array($s->id, $idstations))
                             array_push($idstations, $s->id);
                         $change = false;
-                        break;
                     }
                 }
             }
@@ -119,6 +121,7 @@ class Activities
     // Envia de notifacion a los usuarios con sus estaciones correspondientes
     private function sendNotification($ids, $stations)
     {
+        // print_r(json_encode($stations));
         try {
             $fields = array(
                 'to' => $ids,
