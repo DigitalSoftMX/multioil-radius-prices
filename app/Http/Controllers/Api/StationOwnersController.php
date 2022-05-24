@@ -65,6 +65,7 @@ class StationOwnersController extends Controller
             $contents = curl_exec($curl);
             $apiPrices = simplexml_load_string($contents);
             $prices = array();
+            $promPrices = array();
             foreach ($stations as $station) {
                 $station['place_id'] = $station['place_id'];
                 $station['cre_id'] = $station['cre_id'];
@@ -79,14 +80,42 @@ class StationOwnersController extends Controller
                         $station['prices'] =  $prices;
                     }
                 }
+                array_push($promPrices, $station['prices']);
                 array_push($newStations, $station);
             }
+
         } catch (Exception $e) {
             // return $coordinates;
         }
 
         if (count($newStations) > 0) {
-            return $this->response->successReponse('stations', $newStations);
+            //Promedio radio
+            if (is_array($promPrices)) {
+                $regular = array(); $premium = array(); $diesel = array();
+                foreach($promPrices as $p_prices){
+                    if (isset($p_prices['regular']) && !is_null($p_prices['regular'])) {
+                        array_push($regular,$p_prices['regular']);
+                    }
+                    if (isset($p_prices['premium']) && !is_null($p_prices['premium'])) {
+                        array_push($premium, $p_prices['premium']);
+                    }
+                    if (isset($p_prices['diesel']) && !is_null($p_prices['diesel'])) {
+                        array_push($diesel, $p_prices['diesel']);
+                    }
+                }
+                $newPromPrices = array();
+                if (is_array($regular)) {
+                    $newPromPrices['regular'] = array_count_values($regular);
+                }
+                if (is_array($premium)) {
+                    $newPromPrices['premium'] = array_count_values($premium);
+                }
+                if (is_array($diesel)) {
+                    $newPromPrices['diesel'] = array_count_values($diesel);
+                }
+                $data = ['stations'=> $newStations, 'promPrices'=>$newPromPrices];
+            }
+            return $this->response->successReponse('data', $data);
         }
 
         return $this->response->errorResponse('No hay estaciones cerca.', 13);
