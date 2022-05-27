@@ -26,5 +26,6 @@ Route::group(['middleware' => 'jwtAuth'], function () {
 Route::group(['middleware' => 'jwtAuth'], function () {
     Route::get('owners', 'Api\StationOwnersController@index');
     Route::get('owners/placeclosetome', 'Api\StationOwnersController@placeCloseToMe');
+    Route::get('owners/local/placeclosetome', 'Api\StationOwnersController@stationsNearLocation');
     Route::post('setradio', 'Api\StationOwnersController@setRadio');
 });

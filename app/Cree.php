@@ -6,7 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Cree extends Model
 {
+    protected $table = 'crees';
     protected $fillable = ['name', 'place_id', 'cre_id', 'latitude', 'longitude'];
+
     // Relacion con los admins
     public function admins()
     {
@@ -15,6 +17,6 @@ class Cree extends Model
     // Relacion con los precios de la cree
     public function prices()
     {
-        return $this->hasMany(PriceCre::class);
+        return $this->hasOne(PriceCre::class, 'cree_id');
     }
 }

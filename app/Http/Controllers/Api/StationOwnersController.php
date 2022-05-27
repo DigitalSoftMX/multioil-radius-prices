@@ -50,7 +50,6 @@ class StationOwnersController extends Controller
 
         $stations = array();
 
-        $station = [];
         try {
             $stations = $this->activities->getStationsCloseToMe($request->placeid, $request->latitude, $request->longitude, $request->radius);
             if (count($stations) == 0) {
@@ -64,7 +63,6 @@ class StationOwnersController extends Controller
             curl_setopt($curl, CURLOPT_URL, 'https://publicacionexterna.azurewebsites.net/publicaciones/prices');
             $contents = curl_exec($curl);
             $apiPrices = simplexml_load_string($contents);
-            $prices = array();
             $promPrices = array();
             foreach ($stations as $station) {
                 $station['place_id'] = $station['place_id'];
@@ -72,6 +70,7 @@ class StationOwnersController extends Controller
                 $station['name'] = $station['name'];
                 $station['latitude'] = $station['latitude'];
                 $station['longitude'] = $station['longitude'];
+                $prices = array();
                 foreach ($apiPrices->place as $place) {
                     if ($place['place_id'] == $station['place_id']) {
                         foreach ($place->gas_price as $price) {
@@ -152,5 +151,91 @@ class StationOwnersController extends Controller
         }
         $this->activities->notificationPricesAndOwners($this->user->stationscree);
         return $this->response->successReponse('message', 'Rango de estación actualizado.');
+    }
+
+    // función para obtener las estaciónes cerca de unas cordenadas
+    public function stationsNearLocation(Request $request)
+    {
+        $validation = $this->validationRequest->validateCoordinates($request);
+        if (!(is_bool($validation))) {
+            return $this->response->errorResponse($validation, 11);
+        }
+        $stations = array();
+        try {
+            $stations = Cree::all();
+            if (count($stations) == 0) {
+                return $this->response->errorResponse('No hay estaciones cerca.', 13);
+            }
+            $station    = [];
+            $newStations = [];
+            $promPrices = array();
+            foreach ($stations as $temp) {
+                if (!empty($temp)) {
+                    if ($request->placeid != $temp['place_id']) {
+                        if ($this->activities->getDistanceBetweenPoints($request->latitude, $request->longitude,$temp['latitude'],$temp['longitude'],$request->radius)){
+                            $station['place_id']    = $temp['place_id'];
+                            $station['cre_id']      = $temp['cre_id'];
+                            $station['name']        = $temp['name'];
+                            $station['latitude']    = $temp['latitude'];
+                            $station['longitude']   = $temp['longitude'];
+                            // echo '<pre>';
+                            // print_r($p);
+                            // echo '</pre>';die();
+                            $prices = [];
+                            if ($temp->prices) {
+                                if (!is_null($temp->prices['regular'])) {
+                                    $prices['regular'] = number_format((float) $temp->prices['regular'], 2);
+                                }
+                                if (!is_null($temp->prices['premium'])) {
+                                    $prices['premium'] = number_format((float) $temp->prices['premium'], 2);
+                                }
+                                if (!is_null($temp->prices['diesel'])) {
+                                    $prices['diesel'] = number_format((float) $temp->prices['diesel'], 2);
+                                }
+                                $station['prices'] = $prices;
+                                array_push($promPrices, $prices);
+                            }
+                            array_push($newStations, $station);
+                        }
+                    }
+                }
+            }
+
+        if (count($newStations) > 0) {
+            //Promedio radio
+            if (is_array($promPrices)) {
+                $regular = array(); $premium = array(); $diesel = array();
+                foreach($promPrices as $p_prices){
+                    if (isset($p_prices['regular']) && !is_null($p_prices['regular'])) {
+                        array_push($regular,$p_prices['regular']);
+                    }
+                    if (isset($p_prices['premium']) && !is_null($p_prices['premium'])) {
+                        array_push($premium, $p_prices['premium']);
+                    }
+                    if (isset($p_prices['diesel']) && !is_null($p_prices['diesel'])) {
+                        array_push($diesel, $p_prices['diesel']);
+                    }
+                }
+                $newPromPrices = array();
+                if (is_array($regular)) {
+                    $newPromPrices['regular'] = array_count_values($regular);
+                }
+                if (is_array($premium)) {
+                    $newPromPrices['premium'] = array_count_values($premium);
+                }
+                if (is_array($diesel)) {
+                    $newPromPrices['diesel'] = array_count_values($diesel);
+                }
+                $data = ['stations'=> $newStations, 'promPrices'=>$newPromPrices];
+            }else {
+                return response()->json(['data'=>'No es array','message'=>'Success'], 200);
+            }
+            return $this->response->successReponse('data', $data);
+        }
+        } catch (Exception $e) {
+            // return $coordinates;
+            // return response()->json(['error'=>$e],400);
+        }
+        return $this->response->errorResponse('No hay estaciones cerca.', 13);
     }
 }

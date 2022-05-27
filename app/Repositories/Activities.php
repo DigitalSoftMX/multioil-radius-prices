@@ -153,7 +153,7 @@ class Activities
         }
     }
     // función para medir la distancia entre dos coordenadas
-    private function getDistanceBetweenPoints($lat1, $lng1, $lat2, $lng2, $radius)
+    public function getDistanceBetweenPoints($lat1, $lng1, $lat2, $lng2, $radius)
     {
         // El radio del planeta tierra en metros.
         $R = 6378137;
