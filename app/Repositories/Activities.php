@@ -28,6 +28,26 @@ class Activities
                         $station['latitude'] = number_format(floatval($place->location->y), 5);
                         $station['longitude'] = number_format(floatval($place->location->x), 5);
                         array_push($stations, $station);
+
+                        /* ***************INICIO*************** */
+                        /* $key        = 'AIzaSyDAYDRUB8-MNmO6JAy0aHaNaOKmE5VZHpI';
+                            $location   = $station['latitude'].','.$station['longitude'];
+                            $type       = 'gas_station';
+                            error_log('key: '.$key.' location: '.$location.' type:'.$type); die();
+                            $url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?key=$key&location=$location&type=$type&keyword=$type&radius=10";
+                            $content = file_get_contents($url);
+                            $apiPlacesGoogle = json_decode($content);
+                            $apiPlaces = simplexml_load_string($content);
+                            echo '<pre>';
+
+                            print_r(json_decode($content));
+                            echo '</pre>';die();
+                            return response()->json(['data'=>$apiPlacesGoogle],200);
+                            foreach ($apiPlacesGoogle->results as $c) {
+                            return response()->json(['data'=>$c],200);
+                        } */
+                        /* ***************FIN****************** */
+
                     }
                 }
             }

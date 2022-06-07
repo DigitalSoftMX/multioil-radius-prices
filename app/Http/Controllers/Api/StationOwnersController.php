@@ -10,6 +10,7 @@ use App\Repositories\ValidationRequest;
 use App\Repositories\ErrorSuccessLogout;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Exception;
+use App\Models\AliasStation;
 
 class StationOwnersController extends Controller
 {
@@ -64,6 +65,9 @@ class StationOwnersController extends Controller
             $contents = curl_exec($curl);
             $apiPrices = simplexml_load_string($contents);
             $promPrices = array();
+            //Muchas veces el siclo jeje correjir
+            error_log('********stations: '.count($stations));
+            $i = 0;
             foreach ($stations as $station) {
                 $station['place_id'] = $station['place_id'];
                 $station['cre_id'] = $station['cre_id'];
@@ -81,9 +85,78 @@ class StationOwnersController extends Controller
                 }
                 array_push($promPrices, $station['prices']);
                 array_push($newStations, $station);
+
+                /* ******Start station name con cree y google ****** */
+                $key        = 'AIzaSyDAYDRUB8-MNmO6JAy0aHaNaOKmE5VZHpI';
+                $type       = 'gas_station';
+                $location   = $station['latitude'].','.$station['longitude'];
+                $url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?key=$key&location=$location&type=$type&radius=20";
+                $content = file_get_contents($url);
+                $apiPlacesGoogle = json_decode($content);
+                if (count($apiPlacesGoogle->results) == 0) {
+                    $url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?key=$key&location=$location&type=$type&keyword=$type&radius=10";
+                    $content = file_get_contents($url);
+                    $apiPlacesGoogle = json_decode($content);
+                    if (count($apiPlacesGoogle->results) == 0 && $apiPlacesGoogle->status == 'ZERO_RESULTS') {
+                        $url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?key=$key&location=$location&type=$type&radius=40";
+                        $content = file_get_contents($url);
+                        $apiPlacesGoogle = json_decode($content);
+                    }
+                }
+                // error_log('Num stations google: '.count($apiPlacesGoogle->results).' cree location: '.$location. ' place_id: '.$station['place_id']);
+                //echo '<pre>';print_r(json_decode($content));echo '</pre>';die();
+                if (!empty($apiPlacesGoogle)) {
+                    $i++;
+                    // error_log('Entra foreach station: '.$i);
+                    foreach ($apiPlacesGoogle->results as $c) {
+                        if (isset($c->business_status) && $c->business_status == 'OPERATIONAL') {
+                            //Guardar si hay mas de una estacion en un radio 10
+                            // error_log('google location: '.$c->geometry->location->lat.','.$c->geometry->location->lng . ' name: '.$c->name);
+                            if (isset($c->name) && isset($c->place_id) && isset($c->user_ratings_total) && isset($c->vicinity)) {
+                                if (count($apiPlacesGoogle->results) > 1) {
+                                    //Buscar en alias_station si existe no guaradar
+                                    $alias_find = AliasStation::where('g_placeid','like','%'.$c->place_id.'%')->first();
+                                    if (is_null($alias_find)) {
+                                        //Obtener id de la cree no de table station
+                                        $cree = Cree::where('place_id','=',$station['place_id'])->first();
+                                        // error_log('Cree id:'.$cree->id.' name: '.$cree->name);
+                                        //crear Estacion no existe en bd
+                                        $alias = AliasStation::create([
+                                            'name'              => $c->name,
+                                            'g_placeid'         => $c->place_id,
+                                            'user_rating_total' => $c->user_ratings_total,
+                                            'vicinity'          => $c->vicinity,
+                                            'cree_id'           => $cree->id,
+                                        ]);
+                                        // error_log('alias estacion: '. json_encode($alias));
+                                    }
+                                }
+                                if (count($apiPlacesGoogle->results) == 1) {
+                                    //Cambiar el name en tabla de la cree
+                                    $cree = Cree::where('place_id','=',$station['place_id'])->first();
+                                    // error_log('Cree name:'.$cree->name.' google name: '.$c->name);
+                                    if ($cree->name != $c->name) {
+                                        // error_log('Cambiar name en la cree id: '.$cree->id);
+                                        $cree->update([
+                                            'name'  => $c->name,
+                                        ]);
+                                    }
+                                }
+                            }else {
+                                // error_log('No exite: name place_id user_ratings_total vicinity');
+                            }
+                        }
+                    }
+                    // error_log('-----FIN data google-----');
+                }
+                /* if ($i == 23) {
+                    return response()->json(['data apiPlacesGoogle'=>$apiPlacesGoogle],200);
+                } */
+                /* ************End Station name*************** */
             }
 
         } catch (Exception $e) {
+            return response()->json(['error'=>$e],400);
             // return $coordinates;
         }
 
@@ -119,7 +192,6 @@ class StationOwnersController extends Controller
 
         return $this->response->errorResponse('No hay estaciones cerca.', 13);
     }
-
 
     // Establece el rango en distancia entre el usuario estacion y las estaciones de competencia
     public function setRadio(Request $request)
@@ -196,8 +268,24 @@ class StationOwnersController extends Controller
                                 array_push($promPrices, $prices);
                             }
                             array_push($newStations, $station);
+
+                            /* ***************INICIO*************** */
+                                /* $key        = 'AIzaSyDAYDRUB8-MNmO6JAy0aHaNaOKmE5VZHpI';
+                                $location   = $request->latitude.','.$request->longitude;
+                                $type       = 'gas_station';
+                                error_log('key: '.$key.' location: '.$location.' type:'.$type);
+                                $url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?key=$key&location=$location&type=$type&keyword=$type&radius=10";
+                                $content = file_get_contents($url);
+                                $apiPlacesGoogle = json_decode($content);
+
+                                foreach ($apiPlacesGoogle->results as $c) {
+                                    return response()->json(['data'=>$c],200);
+                                } */
+                            /* ***************FIN****************** */
                         }
+
                     }
+
                 }
             }
 
@@ -238,4 +326,12 @@ class StationOwnersController extends Controller
         }
         return $this->response->errorResponse('No hay estaciones cerca.', 13);
     }
+
+    //Funcion para guardar el promedio mediante una lista
+    public function updateList(Request $request)
+    {
+        //Pendiente
+    }
+
+
 }
