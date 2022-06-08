@@ -19,4 +19,8 @@ class Cree extends Model
     {
         return $this->hasOne(PriceCre::class, 'cree_id');
     }
+    public function pricesMul()
+    {
+        return $this->hasMany(PriceCre::class, 'cree_id');
+    }
 }

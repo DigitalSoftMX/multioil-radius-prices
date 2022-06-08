@@ -21,6 +21,7 @@ Route::group(['middleware' => 'jwtAuth'], function () {
     Route::get('client/edit', 'Api\ClientController@edit');
     Route::post('client/update', 'Api\ClientController@update');
     Route::get('prices', 'Api\SaleController@getPricesGasoline');
+    Route::get('prices/reposta','Api\SaleController@getPricesGasolineReposta');
 });
 // Rutas para dueños de estación
 Route::group(['middleware' => 'jwtAuth'], function () {

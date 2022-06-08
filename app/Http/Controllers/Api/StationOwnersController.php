@@ -103,7 +103,7 @@ class StationOwnersController extends Controller
                         $apiPlacesGoogle = json_decode($content);
                     }
                 }
-                // error_log('Num stations google: '.count($apiPlacesGoogle->results).' cree location: '.$location. ' place_id: '.$station['place_id']);
+                error_log('Num stations google: '.count($apiPlacesGoogle->results).' cree location: '.$location. ' place_id: '.$station['place_id']);
                 //echo '<pre>';print_r(json_decode($content));echo '</pre>';die();
                 if (!empty($apiPlacesGoogle)) {
                     $i++;
@@ -113,14 +113,13 @@ class StationOwnersController extends Controller
                             //Guardar si hay mas de una estacion en un radio 10
                             // error_log('google location: '.$c->geometry->location->lat.','.$c->geometry->location->lng . ' name: '.$c->name);
                             if (isset($c->name) && isset($c->place_id) && isset($c->user_ratings_total) && isset($c->vicinity)) {
-                                if (count($apiPlacesGoogle->results) > 1) {
+                                if (count($apiPlacesGoogle->results) >= 1) {
                                     //Buscar en alias_station si existe no guaradar
                                     $alias_find = AliasStation::where('g_placeid','like','%'.$c->place_id.'%')->first();
                                     if (is_null($alias_find)) {
                                         //Obtener id de la cree no de table station
                                         $cree = Cree::where('place_id','=',$station['place_id'])->first();
                                         // error_log('Cree id:'.$cree->id.' name: '.$cree->name);
-                                        //crear Estacion no existe en bd
                                         $alias = AliasStation::create([
                                             'name'              => $c->name,
                                             'g_placeid'         => $c->place_id,
@@ -128,30 +127,28 @@ class StationOwnersController extends Controller
                                             'vicinity'          => $c->vicinity,
                                             'cree_id'           => $cree->id,
                                         ]);
-                                        // error_log('alias estacion: '. json_encode($alias));
+                                        error_log('alias estacion: '. json_encode($alias));
                                     }
                                 }
-                                if (count($apiPlacesGoogle->results) == 1) {
-                                    //Cambiar el name en tabla de la cree
+                                //Cambiar el name en tabla de la cree
+                                /* if (count($apiPlacesGoogle->results) == 1) {
                                     $cree = Cree::where('place_id','=',$station['place_id'])->first();
-                                    // error_log('Cree name:'.$cree->name.' google name: '.$c->name);
+                                    error_log('Cree name:'.$cree->name.' google name: '.$c->name);
                                     if ($cree->name != $c->name) {
-                                        // error_log('Cambiar name en la cree id: '.$cree->id);
+                                        error_log('Cambiar name en la cree id: '.$cree->id);
                                         $cree->update([
                                             'name'  => $c->name,
                                         ]);
                                     }
-                                }
-                            }else {
-                                // error_log('No exite: name place_id user_ratings_total vicinity');
+                                } */
                             }
                         }
                     }
-                    // error_log('-----FIN data google-----');
+                    error_log('-----FIN data google-----');
                 }
-                /* if ($i == 23) {
-                    return response()->json(['data apiPlacesGoogle'=>$apiPlacesGoogle],200);
-                } */
+                // if ($i == 5) {
+                //     return response()->json(['data apiPlacesGoogle'=>$apiPlacesGoogle],200);
+                // }
                 /* ************End Station name*************** */
             }
 
@@ -250,9 +247,7 @@ class StationOwnersController extends Controller
                             $station['name']        = $temp['name'];
                             $station['latitude']    = $temp['latitude'];
                             $station['longitude']   = $temp['longitude'];
-                            // echo '<pre>';
-                            // print_r($p);
-                            // echo '</pre>';die();
+                            // echo '<pre>'; print_r($p); echo '</pre>';die();
                             $prices = [];
                             if ($temp->prices) {
                                 if (!is_null($temp->prices['regular'])) {
