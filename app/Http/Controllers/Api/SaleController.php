@@ -73,8 +73,11 @@ class SaleController extends Controller
             $to = Carbon::parse($request->date)->format('Y-m-d') . ' 23:59:59';
             $prices = PriceCre::where('cree_id','=',$cre->id)
                 ->whereBetween('updated_at',[$from,$to])
+                ->select('regular','premium','diesel','created_at','updated_at')
                 ->limit(3)->get();
-            // $prices = PriceCre::where('updated_at','>=',$date)->get();
+
+            $prices[0]['name'] = $cre->name;
+            $prices[0]['pl'] = $cre->cre_id;
 
             return count($prices) > 0 ?
             $this->response->successReponse('prices', $prices) :
