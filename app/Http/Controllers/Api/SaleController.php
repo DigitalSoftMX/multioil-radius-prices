@@ -76,8 +76,10 @@ class SaleController extends Controller
                 ->select('regular','premium','diesel','created_at','updated_at')
                 ->limit(3)->get();
 
-            $prices[0]['name'] = $cre->name;
-            $prices[0]['pl'] = $cre->cre_id;
+            foreach ($prices as $price) {
+                $price['name'] = $cre->name;
+                $price['pl'] = $cre->cre_id;
+            }
 
             return count($prices) > 0 ?
             $this->response->successReponse('prices', $prices) :
